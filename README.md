@@ -44,3 +44,46 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
+### MongoDB with docker-compose
+
+A local MongoDB can be started with docker-compose at the repository root:
+
+```
+docker-compose up -d mongo
+```
+
+This exposes MongoDB on localhost:27017 and persists data in a named volume.
+
+### Environment variables
+
+Copy node_api/.env.example to node_api/.env and adjust if needed.
+
+- MONGODB_URI: MongoDB connection string. Defaults to mongodb://localhost:27017/node_api
+
+### User API endpoints
+
+Once MongoDB is running and MONGODB_URI is set, start the Node API:
+
+```
+npm start --prefix node_api
+```
+
+Available endpoints:
+- GET /users — list users
+- GET /users/:id — get a user by ID
+- POST /users — create a user (body: { name, email })
+- PATCH /users/:id — update a user (body: { name?, email? })
+- DELETE /users/:id — delete a user
+
+### Development helpers
+
+- Run with auto-reload:
+```
+npm run dev --prefix node_api
+```
+
+- Run tests (uses in-memory MongoDB automatically):
+```
+npm test --prefix node_api
+```
+
