@@ -5,7 +5,7 @@ Common commands
   - python -m venv .venv && source .venv/bin/activate
   - pip install -r requirements.txt
   - uvicorn app.main:app --reload
-  - python -m api.app  (or uvicorn api.app:app --reload)
+  - python -m api.app  (or uvicorn api.app:app --reload --port 8001)
   - pytest -q
 - Node API
   - npm install --prefix node_api
@@ -29,7 +29,7 @@ Troubleshooting
   - Vite: 5173; Uvicorn: 8000; Node: 3000
   - Kill the process using the port or change the port in start commands
 - Node modules issues
-  - Remove node_api/node_modules and reinstall with npm ci --prefix node_api (or npm install)
+  - Remove node_api/node_modules and reinstall with npm install --prefix node_api
   - Clear npm cache if needed (npm cache clean --force)
 - Python venv issues
   - Recreate venv; ensure correct interpreter version (Python 3.11+)
