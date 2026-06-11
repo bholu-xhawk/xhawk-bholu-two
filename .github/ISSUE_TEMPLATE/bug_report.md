@@ -23,7 +23,7 @@ What actually happens (include error messages).
 - Node version
 - Python version
 - Browser
-- Relevant env vars (e.g., MONGO_URI)
+- Relevant env vars (e.g., MONGODB_URI)
 
 ## Logs / screenshots
 Include relevant logs or images.

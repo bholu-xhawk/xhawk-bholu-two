@@ -44,7 +44,7 @@ Development commands
 - Database migrations/seed (Node API)
   - Pattern: create scripts under node_api/scripts/ for seeding/migrations
   - Example script outline (conceptual):
-    - node_api/scripts/seed.js connects via MONGO_URI, inserts fixtures, exits
+    - node_api/scripts/seed.js connects via MONGODB_URI, inserts fixtures, exits
 
 Repository structure
 - app/: FastAPI hello service (GET /)

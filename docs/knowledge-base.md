@@ -24,7 +24,7 @@ Common commands
 Troubleshooting
 - Mongo connection refused
   - Ensure docker-compose up -d mongo is running (port 27017)
-  - Check MONGO_URI env var in node_api (.env or config.js)
+  - Check MONGODB_URI env var in node_api (.env or config.js)
 - Port conflicts
   - Vite: 5173; Uvicorn: 8000; Node: 3000
   - Kill the process using the port or change the port in start commands
