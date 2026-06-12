@@ -5,7 +5,7 @@ Common commands
   - python -m venv .venv && source .venv/bin/activate
   - pip install -r requirements.txt
   - uvicorn app.main:app --reload
-  - python -m api.app  (or uvicorn api.app:app --reload --port 8001)
+  - uvicorn api.app:app --reload --port 8001
   - pytest -q
 - Node API
   - npm install --prefix node_api

@@ -26,7 +26,7 @@ Development commands
   - Create venv: python -m venv .venv && source .venv/bin/activate
   - Install deps: pip install -r requirements.txt
   - Run hello app: uvicorn app.main:app --reload
-  - Run health app: python -m api.app  (or: uvicorn api.app:app --reload --port 8001)
+  - Run health app: uvicorn api.app:app --reload --port 8001
   - Run tests: pytest -q
 - Node API (Express + Mongoose)
   - Install deps: npm install --prefix node_api
