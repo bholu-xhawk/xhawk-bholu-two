@@ -21,11 +21,11 @@ _store: Dict[UUID, AdminMember] = {}
 
 
 def _email_in_use(email: str, exclude_id: Optional[UUID] = None) -> bool:
-    lowered = email.lower()
+    lowered = email.strip().lower()
     for mid, member in _store.items():
         if exclude_id is not None and mid == exclude_id:
             continue
-        if member.email.lower() == lowered:
+        if member.email.strip().lower() == lowered:
             return True
     return False
 
@@ -54,7 +54,7 @@ def get_member(member_id: UUID) -> AdminMember:
 
 @router.post("/members", response_model=AdminMember, status_code=status.HTTP_201_CREATED)
 def create_member(payload: AdminMemberCreate) -> AdminMember:
-    email_lower = payload.email.lower()
+    email_lower = payload.email.strip().lower()
     if _email_in_use(email_lower):
         raise HTTPException(status_code=409, detail="Email already in use")
     now = utcnow()
@@ -73,7 +73,7 @@ def create_member(payload: AdminMemberCreate) -> AdminMember:
 @router.put("/members/{member_id}", response_model=AdminMember)
 def replace_member(member_id: UUID, payload: AdminMemberCreate) -> AdminMember:
     existing = _get_member_or_404(member_id)
-    email_lower = payload.email.lower()
+    email_lower = payload.email.strip().lower()
     if _email_in_use(email_lower, exclude_id=member_id):
         raise HTTPException(status_code=409, detail="Email already in use")
     updated = AdminMember(
@@ -95,7 +95,7 @@ def update_member(member_id: UUID, payload: AdminMemberUpdate) -> AdminMember:
 
     # Handle email uniqueness and normalization if provided
     if "email" in update_data and update_data["email"] is not None:
-        new_email = str(update_data["email"]).lower()
+        new_email = str(update_data["email"]).strip().lower()
         if _email_in_use(new_email, exclude_id=member_id):
             raise HTTPException(status_code=409, detail="Email already in use")
         update_data["email"] = new_email
