@@ -11,6 +11,9 @@ import Skills from './pages/Skills'
 import Experience from './pages/Experience'
 import Blog from './pages/Blog'
 import Resume from './pages/Resume'
+import Superadmin from './pages/Superadmin'
+import Login from './pages/Login'
+import RequireSuperadmin from './components/RequireSuperadmin'
 
 function App() {
   const location = useLocation()
@@ -30,6 +33,8 @@ function App() {
             <Route path="/experience" element={<Experience />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/resume" element={<Resume />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/superadmin" element={<RequireSuperadmin><Superadmin /></RequireSuperadmin>} />
           </Routes>
         </AnimatePresence>
       </div>
@@ -38,3 +43,4 @@ function App() {
 }
 
 export default App
+
