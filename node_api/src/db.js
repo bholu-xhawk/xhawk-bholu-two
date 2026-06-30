@@ -7,4 +7,6 @@ async function connectMongo() {
   return mongoose.connection;
 }
 
-module.exports = { connectMongo };
+// Backward-compatible named export expected by tests
+module.exports = { connectMongo, connect: connectMongo };
+
