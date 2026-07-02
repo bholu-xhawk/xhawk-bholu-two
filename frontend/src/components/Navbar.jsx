@@ -17,9 +17,12 @@ const Navbar = () => {
         <NavLink to="/resume" className={({ isActive }) => isActive ? 'active' : undefined}>Resume</NavLink>
         <NavLink to="/setup" className={({ isActive }) => isActive ? 'active' : undefined}>Setup</NavLink>
         <NavLink to="/contact" className={({ isActive }) => isActive ? 'active' : undefined}>Contact</NavLink>
+        <NavLink to="/superadmin" className={({ isActive }) => isActive ? 'active' : undefined}>Superadmin</NavLink>
+        <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : undefined}>Login</NavLink>
       </div>
     </nav>
   )
 }
 
 export default Navbar
+
