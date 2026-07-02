@@ -1,10 +1,11 @@
+let inMemoryToken = null
+
 export function getToken() {
-  return localStorage.getItem('access_token')
+  return inMemoryToken
 }
 
 export function setToken(token) {
-  if (token) localStorage.setItem('access_token', token)
-  else localStorage.removeItem('access_token')
+  inMemoryToken = token || null
 }
 
 export async function apiFetch(path, options = {}) {

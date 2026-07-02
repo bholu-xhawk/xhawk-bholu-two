@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # JWT config
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret")
+JWT_SECRET = os.environ["JWT_SECRET"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 ALLOWED_ROLES = {"Superadmin", "User"}
@@ -53,18 +53,18 @@ def create_access_token(*, subject: str, role: str, expires_delta: Optional[time
 def get_current_user(request: Request) -> User:
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated", headers={"WWW-Authenticate": "Bearer"})
     token = auth_header.split(" ", 1)[1]
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
         if username is None or role is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload", headers={"WWW-Authenticate": "Bearer"})
         if role not in ALLOWED_ROLES:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid role in token")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid role in token", headers={"WWW-Authenticate": "Bearer"})
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
     return User(username=username, role=role)
 
 
@@ -83,7 +83,7 @@ def health():
 def login(data: LoginRequest):
     if data.role not in ALLOWED_ROLES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown role")
-    access_token = create_access_token(subject=data.username, role=data.role)
+    access_token = create_access_token(subject=data.username, role="User")
     return {"access_token": access_token, "token_type": "bearer"}
 
 
