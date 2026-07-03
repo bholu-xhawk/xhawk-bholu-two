@@ -57,6 +57,35 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// Replace full
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: 'invalid id' });
+  }
+  const { name, email } = req.body || {};
+  if (!name || !email || typeof name !== 'string' || typeof email !== 'string') {
+    return res.status(400).json({ error: 'name and email are required' });
+  }
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { name, email },
+      { new: true, runValidators: true, upsert: false }
+    );
+    if (!user) return res.status(404).json({ error: 'not found' });
+    return res.status(200).json(user);
+  } catch (err) {
+    if (err && err.code === 11000) {
+      return res.status(409).json({ error: 'email already exists' });
+    }
+    if (err && err.name === 'ValidationError') {
+      return res.status(400).json({ error: 'validation error' });
+    }
+    return res.status(500).json({ error: 'internal error' });
+  }
+});
+
 // Delete
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
