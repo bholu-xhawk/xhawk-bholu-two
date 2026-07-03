@@ -1,6 +1,6 @@
 # FastAPI Hello World API
 
-This is a minimal FastAPI application with a single endpoint and a basic test.
+This is a minimal FastAPI application with a Hello World endpoint and a simple file-backed Todo service, plus a React frontend.
 
 ## Setup
 
@@ -20,6 +20,30 @@ uvicorn app.main:app --reload
 ```
 
 Visit http://127.0.0.1:8000/ to see the Hello World response.
+
+### Todo App (FastAPI)
+
+A simple Todo API is implemented in `app/main.py` with JSON-file persistence.
+
+- Endpoints:
+  - `GET /todos` — list todos
+  - `POST /todos` — create; body: `{ "title": "Buy milk" }`
+  - `PATCH /todos/{id}` — update; body may include `{ "title": "...", "completed": true }`
+  - `DELETE /todos/{id}` — delete
+- Persistence file path can be changed by setting the `TODO_FILE` environment variable. Default is `app/todos.json`.
+- CORS is enabled for `http://localhost:5173` and `http://127.0.0.1:5173` to allow the Vite frontend to call the API.
+
+### Frontend (Vite React)
+
+A Todos page is available at `/todos` when running the Vite dev server.
+
+- Start the dev server:
+
+```
+npm run dev --prefix frontend
+```
+
+By default, the frontend calls the API at `http://127.0.0.1:8000`.
 
 ## Run tests
 
