@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from typing import List
 
 app = FastAPI()
@@ -25,7 +25,7 @@ class Todo(BaseModel):
 
 
 class TodoCreate(BaseModel):
-    text: str
+    text: constr(strip_whitespace=True, min_length=1, max_length=256)
 
 
 class TodoUpdate(BaseModel):

@@ -13,6 +13,7 @@ function Todos() {
     setError('')
     try {
       const r = await fetch(API_BASE)
+      if (!r.ok) throw new Error('Failed to load')
       const data = await r.json()
       setItems(data)
     } catch (e) {
