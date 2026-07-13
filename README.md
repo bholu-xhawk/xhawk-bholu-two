@@ -31,6 +31,59 @@ pytest -q
 
 ---
 
+## Frontend (React + Vite)
+
+The React frontend lives under `frontend/`.
+
+### Install dependencies
+
+```
+npm ci --prefix frontend
+```
+
+### Run the dev server
+
+```
+npm run dev --prefix frontend
+```
+
+### Unit tests (Jest + Testing Library)
+
+Run unit tests for the frontend with Jest:
+
+```
+npm run test:unit --prefix frontend
+```
+
+Notes:
+- Jest is configured with `babel-jest` and `@babel/preset-react` to transform JSX/ESM.
+- The test environment is `jsdom` and Testing Library matchers are enabled via `setupTests.js`.
+
+### End-to-end (E2E) tests (Playwright)
+
+Playwright is configured in `frontend/playwright.config.js` with an example spec at `frontend/e2e/example.spec.example.js`. The example is not executed by default.
+
+To run E2E tests locally or in CI:
+1. Install dependencies and Playwright browsers
+   ```
+   npm ci --prefix frontend
+   npx playwright install
+   ```
+2. Enable the example test by renaming the file to `example.spec.js` (or add your own `*.spec.js`):
+   ```
+   mv frontend/e2e/example.spec.example.js frontend/e2e/example.spec.js
+   ```
+3. Run the tests:
+   ```
+   npm run test:e2e --prefix frontend
+   ```
+
+Playwright will start the Vite dev server on `http://localhost:5173` if it is not already running (`reuseExistingServer: true`).
+
+> CI note: Playwright browser binaries are not installed by default. Ensure `npx playwright install` (optionally with `--with-deps` in containers) runs before executing E2E tests.
+
+---
+
 ## Node.js API with MongoDB (Mongoose)
 
 A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
