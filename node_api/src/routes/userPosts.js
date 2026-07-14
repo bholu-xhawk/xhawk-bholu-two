@@ -4,8 +4,8 @@ function buildMockPost(userId, postId, overrides = {}) {
   return {
     userId,
     postId,
-    title: overrides.title || 'Mock post title',
-    body: overrides.body || 'Mock post body',
+    title: overrides.title ?? 'Mock post title',
+    body: overrides.body ?? 'Mock post body',
   };
 }
 
