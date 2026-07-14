@@ -64,11 +64,21 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 ### User API endpoints
 
+User CRUD endpoints are backed by MongoDB:
+
 - `GET /users` — list all users
 - `GET /users/:id` — fetch a user by id
 - `POST /users` — create a user; body: `{ name, email }`
 - `PATCH /users/:id` — update a user; body may include `{ name, email }`
 - `DELETE /users/:id` — delete a user
+
+Nested user posts endpoints return mock, non-persistent responses for testing and do not read or write MongoDB:
+
+- `POST /users/:userId/posts` — create a mock post; body may include `{ title, body }`
+- `GET /users/:userId/posts` — list mock posts for a user
+- `GET /users/:userId/posts/:postId` — fetch a mock post by id
+- `PUT /users/:userId/posts/:postId` — update and return a mock post; body may include `{ title, body }`
+- `DELETE /users/:userId/posts/:postId` — delete a mock post response with no body
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
