@@ -5,6 +5,7 @@ const API_BASE = 'http://127.0.0.1:8000'
 function Todos() {
   const [todos, setTodos] = useState([])
   const [title, setTitle] = useState('')
+  const [draftTitles, setDraftTitles] = useState({})
   const [loading, setLoading] = useState(false)
 
   const fetchTodos = async () => {
@@ -39,6 +40,15 @@ function Todos() {
     await fetchTodos()
   }
 
+  const clearDraftTitle = (id, titleToClear) => {
+    setDraftTitles((drafts) => {
+      if (drafts[id] !== titleToClear) return drafts
+      const next = { ...drafts }
+      delete next[id]
+      return next
+    })
+  }
+
   const updateTitle = async (id, newTitle) => {
     await fetch(`${API_BASE}/todos/${id}`, {
       method: 'PATCH',
@@ -46,6 +56,7 @@ function Todos() {
       body: JSON.stringify({ title: newTitle })
     })
     await fetchTodos()
+    clearDraftTitle(id, newTitle)
   }
 
   const deleteTodo = async (id) => {
@@ -75,8 +86,15 @@ function Todos() {
             />
             <input
               type="text"
-              value={t.title}
-              onChange={(e) => updateTitle(t.id, e.target.value)}
+              value={draftTitles[t.id] ?? t.title}
+              onChange={(e) => setDraftTitles((drafts) => ({ ...drafts, [t.id]: e.target.value }))}
+              onBlur={(e) => {
+                if (e.target.value !== t.title) updateTitle(t.id, e.target.value)
+                else clearDraftTitle(t.id, e.target.value)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur()
+              }}
               style={{ marginLeft: '8px', marginRight: '8px' }}
             />
             <button onClick={() => deleteTodo(t.id)}>Delete</button>

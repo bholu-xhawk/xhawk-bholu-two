@@ -13,6 +13,6 @@ class TodoCreate(BaseModel):
 
 
 class TodoUpdate(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1)
     completed: Optional[bool] = None
 
