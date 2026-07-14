@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const userPostsRouter = require('./userPosts');
 
 // Create
 router.post('/', async (req, res) => {
@@ -24,6 +25,8 @@ router.get('/', async (_req, res) => {
   const users = await User.find().lean();
   return res.json(users);
 });
+
+router.use('/:userId/posts', userPostsRouter);
 
 // Get by id
 router.get('/:id', async (req, res) => {
