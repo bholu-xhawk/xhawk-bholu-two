@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { fileURLToPath } from 'url';
@@ -46,7 +47,9 @@ export default (env, argv) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: path.resolve(__dirname, 'index.html'),
+        templateContent: fs
+          .readFileSync(path.resolve(__dirname, 'index.html'), 'utf8')
+          .replace(/<script type="module" src="\/src\/main\.jsx"><\/script>/, ''),
       }),
     ],
     devServer: {
