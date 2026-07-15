@@ -72,3 +72,18 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
+---
+
+## Frontend end-to-end tests
+
+The React/Vite app under `frontend/` has Playwright smoke tests for the browser UI.
+
+- Install frontend dependencies:
+  - `npm install --prefix frontend`
+- Install the Chromium browser binary for Playwright:
+  - `npx --prefix frontend playwright install chromium`
+- Run the end-to-end tests:
+  - `npm run test:e2e --prefix frontend`
+- Open the Playwright UI runner for local debugging:
+  - `npm run test:e2e:ui --prefix frontend`
+
