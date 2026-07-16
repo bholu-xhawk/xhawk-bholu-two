@@ -62,6 +62,19 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - The tests use an in-memory MongoDB server and do not require Docker:
   - `npm test --prefix node_api`
 
+---
+
+## Frontend React/Vite app
+
+The React frontend under `frontend/` has its own Vite build and Jest/JSDOM test setup.
+
+### Install and run frontend tests
+
+- Install frontend dependencies:
+  - `npm install --prefix frontend`
+- Run the frontend Jest tests:
+  - `npm test --prefix frontend`
+
 ### User API endpoints
 
 - `GET /users` — list all users
