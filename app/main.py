@@ -1,3 +1,4 @@
+from threading import Lock
 from typing import Optional, Dict
 
 from fastapi import FastAPI, HTTPException
@@ -8,6 +9,7 @@ app = FastAPI()
 # In-memory user store
 USERS: Dict[int, Dict[str, str]] = {}
 NEXT_ID: int = 1
+USER_LOCK = Lock()
 
 
 class UserCreate(BaseModel):
@@ -34,10 +36,11 @@ def read_root():
 @app.post("/users", response_model=UserOut, status_code=201)
 def create_user(user: UserCreate):
     global NEXT_ID
-    user_id = NEXT_ID
-    NEXT_ID += 1
-    data = {"id": user_id, "name": user.name, "email": str(user.email)}
-    USERS[user_id] = data
+    with USER_LOCK:
+        user_id = NEXT_ID
+        NEXT_ID += 1
+        data = {"id": user_id, "name": user.name, "email": str(user.email)}
+        USERS[user_id] = data
     return data
 
 
@@ -53,7 +56,7 @@ def update_user(user_id: int, updates: UserUpdate):
     if user_id not in USERS:
         raise HTTPException(status_code=404, detail="User not found")
     stored = USERS[user_id]
-    update_data = updates.dict(exclude_unset=True)
+    update_data = updates.dict(exclude_unset=True, exclude_none=True)
     # Ensure we convert EmailStr to string if provided
     if "email" in update_data and update_data["email"] is not None:
         update_data["email"] = str(update_data["email"])
