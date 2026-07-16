@@ -23,7 +23,7 @@ What actually happens (include error messages).
 - Node version
 - Python version
 - Browser
-- Relevant env vars (e.g., MONGODB_URI)
+- Relevant env var names and sanitized/redacted values only (e.g., `MONGODB_URI=mongodb://<user>:<redacted>@host/db`)
 
 ## Logs / screenshots
 Include relevant logs or images.
