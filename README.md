@@ -31,6 +31,30 @@ pytest -q
 
 ---
 
+## Vite React frontend
+
+A React portfolio frontend is provided under `frontend/`.
+
+### Install and build the frontend
+
+- Install dependencies:
+  - `npm install --prefix frontend`
+- Build the Vite app:
+  - `npm run build --prefix frontend`
+
+### Run frontend E2E tests
+
+- Install frontend dependencies:
+  - `npm install --prefix frontend`
+- Install the Chromium browser binary once after dependencies are installed:
+  - `npm run test:e2e:install --prefix frontend`
+- Run the Playwright browser smoke tests:
+  - `npm run test:e2e --prefix frontend`
+
+The Playwright config at `frontend/playwright.config.js` builds the Vite app and starts the preview server automatically, so you do not need to run the dev server separately before E2E tests.
+
+---
+
 ## Node.js API with MongoDB (Mongoose)
 
 A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
