@@ -9,6 +9,9 @@ app.get("/", (req, res) => {
 });
 
 const usersRouter = require('./routes/users');
+const booksRouter = require('./routes/books');
+
 app.use('/users', usersRouter);
+app.use('/books', booksRouter);
 
 module.exports = app;
