@@ -6,8 +6,10 @@ let app;
 let mongoServer;
 
 beforeAll(async () => {
-  // Spin up in-memory MongoDB
-  mongoServer = await MongoMemoryServer.create();
+  // Spin up in-memory MongoDB with a Debian 12-compatible MongoDB binary
+  mongoServer = await MongoMemoryServer.create({
+    binary: { version: '7.0.3' },
+  });
   const uri = mongoServer.getUri();
 
   // Set env var before requiring app/index to ensure connection uses this URI
