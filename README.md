@@ -72,3 +72,23 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
+---
+
+## Vite React frontend
+
+The React frontend lives under `frontend/` and includes Jest unit tests for browser-oriented components.
+
+### Install and run the frontend
+
+- Install dependencies:
+  - `npm install --prefix frontend`
+- Run the development server:
+  - `npm run dev --prefix frontend`
+- Build the production bundle:
+  - `npm run build --prefix frontend`
+
+### Run frontend tests
+
+- Run the Jest test suite:
+  - `npm test --prefix frontend`
+
