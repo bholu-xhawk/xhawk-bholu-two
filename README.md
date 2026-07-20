@@ -21,6 +21,109 @@ uvicorn app.main:app --reload
 
 Visit http://127.0.0.1:8000/ to see the Hello World response.
 
+## Mock CRUD API
+
+The Python FastAPI app also exposes a mock-only CRUD resource at `/mock-items` for frontend development and tests. This data is stored in memory inside the FastAPI process, so it resets whenever the server restarts. It is intentionally separate from the Node.js MongoDB-backed `/users` API documented below.
+
+### Endpoints
+
+- `POST /mock-items` — create a mock item
+- `GET /mock-items` — list mock items
+- `GET /mock-items/{item_id}` — fetch one mock item
+- `PUT /mock-items/{item_id}` — replace one mock item
+- `DELETE /mock-items/{item_id}` — delete one mock item
+
+### Example create request
+
+```json
+{
+  "name": "Draft post",
+  "description": "Homepage card",
+  "status": "draft"
+}
+```
+
+Successful `POST /mock-items` response (`201 Created`):
+
+```json
+{
+  "id": 1,
+  "name": "Draft post",
+  "description": "Homepage card",
+  "status": "draft"
+}
+```
+
+### Example list response
+
+Successful `GET /mock-items` response:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Draft post",
+    "description": "Homepage card",
+    "status": "draft"
+  }
+]
+```
+
+### Example read response
+
+Successful `GET /mock-items/1` response:
+
+```json
+{
+  "id": 1,
+  "name": "Draft post",
+  "description": "Homepage card",
+  "status": "draft"
+}
+```
+
+### Example update request
+
+```json
+{
+  "name": "Published post",
+  "description": "Homepage card",
+  "status": "published"
+}
+```
+
+Successful `PUT /mock-items/1` response:
+
+```json
+{
+  "id": 1,
+  "name": "Published post",
+  "description": "Homepage card",
+  "status": "published"
+}
+```
+
+### Example delete response
+
+Successful `DELETE /mock-items/1` response:
+
+```json
+{
+  "message": "Mock item deleted",
+  "id": 1
+}
+```
+
+### Example not found response
+
+Unknown or deleted mock items return `404 Not Found`:
+
+```json
+{
+  "detail": "Mock item not found"
+}
+```
+
 ## Run tests
 
 Execute the test suite with pytest:
