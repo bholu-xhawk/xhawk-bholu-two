@@ -57,6 +57,18 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// Delete many
+router.delete('/', async (req, res) => {
+  const { ids } = req.body || {};
+
+  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((id) => mongoose.isObjectIdOrHexString(id))) {
+    return res.status(400).json({ error: 'ids must be a non-empty array of valid ids' });
+  }
+
+  const result = await User.deleteMany({ _id: { $in: ids } });
+  return res.json({ deletedCount: result.deletedCount });
+});
+
 // Delete
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;

@@ -22,3 +22,28 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helve
 .contact-form input, .contact-form textarea { padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
 .contact-form button { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 0.6rem 0.9rem; cursor: pointer; }
 .contact-form button:hover { background: #1d4ed8; }
+
+.table-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.table-toolbar h1 { margin-bottom: 0.25rem; }
+.table-toolbar p { margin: 0; color: #475569; }
+.table-card { overflow: hidden; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.users-table { width: 100%; border-collapse: collapse; }
+.users-table th, .users-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.users-table th { background: #f8fafc; color: #334155; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.users-table tbody tr { cursor: pointer; transition: background 0.15s ease, box-shadow 0.15s ease; }
+.users-table tbody tr:hover { background: #eff6ff; }
+.users-table tbody tr:last-child td { border-bottom: none; }
+.users-table input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: #2563eb; cursor: pointer; }
+.checkbox-column { width: 3.25rem; text-align: center; }
+.selected-row { background: #dbeafe; box-shadow: inset 4px 0 0 #2563eb; }
+.empty-state { padding: 2rem; color: #475569; text-align: center; }
+.error-message { margin-bottom: 1rem; padding: 0.75rem 1rem; color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; }
+.danger-button { align-self: flex-start; background: #dc2626; color: white; border: none; border-radius: 8px; padding: 0.6rem 0.9rem; font: inherit; font-weight: 600; cursor: pointer; }
+.danger-button:hover:not(:disabled) { background: #b91c1c; }
+.danger-button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+@media (max-width: 640px) {
+  .table-toolbar { flex-direction: column; }
+  .table-card { overflow-x: auto; }
+  .users-table { min-width: 560px; }
+}
