@@ -14,7 +14,10 @@ export default function BookList({ books = [], itemsPerPage = DEFAULT_ITEMS_PER_
 
   const visibleBooks = useMemo(() => {
     const start = (currentPage - 1) * pageSize
-    return safeBooks.slice(start, start + pageSize)
+    return safeBooks.slice(start, start + pageSize).map((book, index) => ({
+      book,
+      originalIndex: start + index,
+    }))
   }, [currentPage, pageSize, safeBooks])
 
   if (safeBooks.length === 0) {
@@ -38,8 +41,8 @@ export default function BookList({ books = [], itemsPerPage = DEFAULT_ITEMS_PER_
             </tr>
           </thead>
           <tbody>
-            {visibleBooks.map(book => (
-              <tr key={`${book.title}-${book.author}-${book.publishedDate}`}>
+            {visibleBooks.map(({ book, originalIndex }) => (
+              <tr key={book.id ?? book.key ?? `${book.title}-${book.author}-${book.publishedDate}-${originalIndex}`}>
                 <td data-label="Title">{book.title}</td>
                 <td data-label="Author">{book.author}</td>
                 <td data-label="Genre">{book.genre}</td>
