@@ -66,8 +66,35 @@ describe('Users CRUD', () => {
     expect(res.body.name).toBe('Dan');
   });
 
+  it('DELETE /users removes selected users only', async () => {
+    const first = await request(app).post('/users').send({ name: 'E', email: 'e@example.com' }).expect(201);
+    const second = await request(app).post('/users').send({ name: 'F', email: 'f@example.com' }).expect(201);
+    const remaining = await request(app).post('/users').send({ name: 'G', email: 'g@example.com' }).expect(201);
+
+    const res = await request(app)
+      .delete('/users')
+      .send({ ids: [first.body._id, second.body._id] })
+      .expect(200);
+
+    expect(res.body).toEqual({ deletedCount: 2 });
+    await request(app).get(`/users/${first.body._id}`).expect(404);
+    await request(app).get(`/users/${second.body._id}`).expect(404);
+
+    const remainingRes = await request(app).get(`/users/${remaining.body._id}`).expect(200);
+    expect(remainingRes.body.email).toBe('g@example.com');
+  });
+
+  it('DELETE /users rejects missing or empty ids', async () => {
+    await request(app).delete('/users').send({}).expect(400);
+    await request(app).delete('/users').send({ ids: [] }).expect(400);
+  });
+
+  it('DELETE /users rejects invalid ids', async () => {
+    await request(app).delete('/users').send({ ids: ['not-a-valid-id'] }).expect(400);
+  });
+
   it('DELETE /users/:id removes a user', async () => {
-    const created = await request(app).post('/users').send({ name: 'E', email: 'e@example.com' }).expect(201);
+    const created = await request(app).post('/users').send({ name: 'H', email: 'h@example.com' }).expect(201);
     const id = created.body._id;
     await request(app).delete(`/users/${id}`).expect(204);
 
