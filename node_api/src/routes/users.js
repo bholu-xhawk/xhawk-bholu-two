@@ -61,7 +61,7 @@ router.patch('/:id', async (req, res) => {
 router.delete('/', async (req, res) => {
   const { ids } = req.body || {};
 
-  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((id) => mongoose.isValidObjectId(id))) {
+  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((id) => mongoose.isObjectIdOrHexString(id))) {
     return res.status(400).json({ error: 'ids must be a non-empty array of valid ids' });
   }
 

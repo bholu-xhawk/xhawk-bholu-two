@@ -7,7 +7,9 @@ let mongoServer;
 
 beforeAll(async () => {
   // Spin up in-memory MongoDB
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await MongoMemoryServer.create({
+    binary: { version: '7.0.3' },
+  });
   const uri = mongoServer.getUri();
 
   // Set env var before requiring app/index to ensure connection uses this URI
