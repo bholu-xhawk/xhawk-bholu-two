@@ -11,6 +11,7 @@ import Skills from './pages/Skills'
 import Experience from './pages/Experience'
 import Blog from './pages/Blog'
 import Resume from './pages/Resume'
+import Books from './pages/Books'
 
 function App() {
   const location = useLocation()
@@ -29,6 +30,7 @@ function App() {
             <Route path="/skills" element={<Skills />} />
             <Route path="/experience" element={<Experience />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/books" element={<Books />} />
             <Route path="/resume" element={<Resume />} />
           </Routes>
         </AnimatePresence>
