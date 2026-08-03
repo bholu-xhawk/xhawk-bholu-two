@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+frontend/dist/
+
+# Playwright artifacts
+frontend/test-results/
+frontend/playwright-report/
+
+# Local sandbox dependency extraction/cache
+.apt/
+
+# Test/tool caches
+.pytest_cache/
+__pycache__/
+*.py[cod]

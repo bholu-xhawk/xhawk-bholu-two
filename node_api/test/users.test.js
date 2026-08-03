@@ -6,8 +6,10 @@ let app;
 let mongoServer;
 
 beforeAll(async () => {
-  // Spin up in-memory MongoDB
-  mongoServer = await MongoMemoryServer.create();
+  // Spin up in-memory MongoDB. MongoDB 6 binaries are not published for Debian 13+.
+  mongoServer = await MongoMemoryServer.create({
+    binary: { version: process.env.MONGOMS_VERSION || '7.0.14' },
+  });
   const uri = mongoServer.getUri();
 
   // Set env var before requiring app/index to ensure connection uses this URI
