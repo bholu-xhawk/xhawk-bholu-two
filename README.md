@@ -23,7 +23,22 @@ Visit http://127.0.0.1:8000/ to see the Hello World response.
 
 ## Run tests
 
-Execute the test suite with pytest:
+Run the repository-wide JavaScript Jest suite from the repository root:
+
+```
+npm test
+```
+
+Jest is configured with separate projects for the Vite React frontend and the Express/Mongoose Node API, so frontend tests run in `jsdom` while backend tests run in Node.
+
+Run package-level JavaScript tests when working in one area:
+
+```
+npm test --prefix frontend
+npm test --prefix node_api
+```
+
+Run the Python test suite separately with pytest:
 
 ```
 pytest -q
@@ -59,8 +74,9 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 ### Run Node API tests
 
-- The tests use an in-memory MongoDB server and do not require Docker:
+- The tests use Jest, Supertest, and an in-memory MongoDB server and do not require Docker:
   - `npm test --prefix node_api`
+- The same backend Jest tests are also included in the repository-wide `npm test` command.
 
 ### User API endpoints
 
