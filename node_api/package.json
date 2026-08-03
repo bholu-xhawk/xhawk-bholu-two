@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest --runInBand"
+    "test": "jest --config jest.config.cjs --runInBand"
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -18,8 +18,5 @@
     "supertest": "^6.3.4",
     "mongodb-memory-server": "^9.0.0",
     "nodemon": "^3.1.0"
-  },
-  "jest": {
-    "testEnvironment": "node"
   }
 }
