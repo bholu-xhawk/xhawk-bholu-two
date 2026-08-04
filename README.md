@@ -31,22 +31,9 @@ pytest -q
 
 ---
 
-## Node.js API with MongoDB (Mongoose)
+## Node.js API with mock User CRUD
 
-A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
-
-### MongoDB with docker-compose
-
-- Start a local MongoDB instance using Docker:
-  - `docker-compose up -d mongo`
-- This exposes MongoDB on `localhost:27017` and persists data in a named volume.
-
-### Environment variables
-
-- Copy `node_api/.env.example` to `.env` and adjust as needed:
-  - `cp node_api/.env.example node_api/.env`
-- By default the app will use `MONGODB_URI=mongodb://localhost:27017/node_api`.
-- If running the API in a container on the same docker network, use `mongodb://mongo:27017/node_api`.
+A separate Node.js Express service is provided under `node_api/` with its own tests and mock in-memory User CRUD responses for testing and prototyping. The `/users` data is stored in the Node process only, resets when the process restarts, and does not require MongoDB.
 
 ### Install and run the Node API
 
@@ -59,16 +46,16 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 ### Run Node API tests
 
-- The tests use an in-memory MongoDB server and do not require Docker:
+- Run the Jest/Supertest suite:
   - `npm test --prefix node_api`
 
 ### User API endpoints
 
-- `GET /users` — list all users
-- `GET /users/:id` — fetch a user by id
-- `POST /users` — create a user; body: `{ name, email }`
-- `PATCH /users/:id` — update a user; body may include `{ name, email }`
-- `DELETE /users/:id` — delete a user
+- `GET /users` — list all mock users
+- `GET /users/:id` — fetch a mock user by generated string id
+- `POST /users` — create a mock user; body: `{ name, email }`
+- `PATCH /users/:id` — update a mock user; body may include `{ name, email }`
+- `DELETE /users/:id` — delete a mock user
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 

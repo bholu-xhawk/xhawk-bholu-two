@@ -1,70 +1,83 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
-const User = require('../models/User');
+
+let users = [];
+let nextId = 1;
+
+function createMockUser({ name, email }) {
+  const now = new Date().toISOString();
+  return {
+    id: String(nextId++),
+    name,
+    email,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function findUserIndex(id) {
+  return users.findIndex((user) => user.id === id);
+}
+
+function hasEmail(email, ignoredId) {
+  return users.some((user) => user.email === email && user.id !== ignoredId);
+}
 
 // Create
-router.post('/', async (req, res) => {
-  try {
-    const { name, email } = req.body || {};
-    if (!name || !email) {
-      return res.status(400).json({ error: 'name and email are required' });
-    }
-    const user = await User.create({ name, email });
-    return res.status(201).json(user);
-  } catch (err) {
-    if (err && err.code === 11000) {
-      return res.status(409).json({ error: 'email already exists' });
-    }
-    return res.status(500).json({ error: 'internal error' });
+router.post('/', (req, res) => {
+  const { name, email } = req.body || {};
+  if (!name || !email) {
+    return res.status(400).json({ error: 'name and email are required' });
   }
+  if (hasEmail(email)) {
+    return res.status(409).json({ error: 'email already exists' });
+  }
+
+  const user = createMockUser({ name, email });
+  users.push(user);
+  return res.status(201).json(user);
 });
 
 // List all
-router.get('/', async (_req, res) => {
-  const users = await User.find().lean();
+router.get('/', (_req, res) => {
   return res.json(users);
 });
 
 // Get by id
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
-  const user = await User.findById(id);
-  if (!user) return res.status(404).json({ error: 'not found' });
-  return res.json(user);
+router.get('/:id', (req, res) => {
+  const index = findUserIndex(req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'not found' });
+  return res.json(users[index]);
 });
 
 // Update partial
-router.patch('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
+router.patch('/:id', (req, res) => {
+  const index = findUserIndex(req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'not found' });
+
   const updates = {};
   if (req.body && typeof req.body.name === 'string') updates.name = req.body.name;
   if (req.body && typeof req.body.email === 'string') updates.email = req.body.email;
-  try {
-    const user = await User.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-    if (!user) return res.status(404).json({ error: 'not found' });
-    return res.json(user);
-  } catch (err) {
-    if (err && err.code === 11000) {
-      return res.status(409).json({ error: 'email already exists' });
-    }
-    return res.status(500).json({ error: 'internal error' });
+
+  const emailWasUpdated = Object.prototype.hasOwnProperty.call(updates, 'email');
+  if (emailWasUpdated && hasEmail(updates.email, req.params.id)) {
+    return res.status(409).json({ error: 'email already exists' });
   }
+
+  users[index] = {
+    ...users[index],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  return res.json(users[index]);
 });
 
 // Delete
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
-  const deleted = await User.findByIdAndDelete(id);
-  if (!deleted) return res.status(404).json({ error: 'not found' });
+router.delete('/:id', (req, res) => {
+  const index = findUserIndex(req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'not found' });
+
+  users.splice(index, 1);
   return res.status(204).send();
 });
 
