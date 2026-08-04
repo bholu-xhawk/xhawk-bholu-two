@@ -70,5 +70,9 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - `PATCH /users/:id` — update a user; body may include `{ name, email }`
 - `DELETE /users/:id` — delete a user
 
+### Mock Student API endpoint
+
+- `POST /student` — mock-create a student; body: `{ name, age, class, rollNumber }`. Returns a creation confirmation with the submitted data and does not persist to the database.
+
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
