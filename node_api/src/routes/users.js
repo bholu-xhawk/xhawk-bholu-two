@@ -2,6 +2,12 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
 
+const mockUsers = [
+  { id: 'demo-1', name: 'Alice Demo', email: 'alice.demo@example.com' },
+  { id: 'demo-2', name: 'Bob Demo', email: 'bob.demo@example.com' },
+  { id: 'demo-3', name: 'Carol Demo', email: 'carol.demo@example.com' },
+];
+
 // Create
 router.post('/', async (req, res) => {
   try {
@@ -19,10 +25,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// List all
-router.get('/', async (_req, res) => {
-  const users = await User.find().lean();
-  return res.json(users);
+// List demo users
+router.get('/', (_req, res) => {
+  return res.json(mockUsers);
 });
 
 // Get by id
