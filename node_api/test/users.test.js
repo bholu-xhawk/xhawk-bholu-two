@@ -44,12 +44,29 @@ describe('Users CRUD', () => {
     expect(res.body.email).toBe('alice@example.com');
   });
 
-  it('GET /users lists users', async () => {
-    await request(app).post('/users').send({ name: 'Bob', email: 'bob@example.com' });
+  it('GET /users lists mock demo users', async () => {
     const res = await request(app).get('/users').expect(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0].email).toBe('bob@example.com');
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'demo-1',
+          name: 'Alice Demo',
+          email: 'alice.demo@example.com',
+        }),
+      ])
+    );
+    res.body.forEach((user) => {
+      expect(user).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+          email: expect.any(String),
+        })
+      );
+      expect(user).not.toHaveProperty('_id');
+    });
   });
 
   it('GET /users/:id returns a user', async () => {

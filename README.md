@@ -33,7 +33,7 @@ pytest -q
 
 ## Node.js API with MongoDB (Mongoose)
 
-A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
+A separate Node.js Express service is provided under `node_api/` with its own tests. Most User API operations are MongoDB-backed; `GET /users` returns static demo users for predictable sample data.
 
 ### MongoDB with docker-compose
 
@@ -64,11 +64,11 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 ### User API endpoints
 
-- `GET /users` — list all users
-- `GET /users/:id` — fetch a user by id
-- `POST /users` — create a user; body: `{ name, email }`
-- `PATCH /users/:id` — update a user; body may include `{ name, email }`
-- `DELETE /users/:id` — delete a user
+- `GET /users` — return static mock demo users shaped as `{ id, name, email }`; this list does not reflect users created in MongoDB
+- `GET /users/:id` — fetch a Mongo-backed user by id
+- `POST /users` — create a Mongo-backed user; body: `{ name, email }`
+- `PATCH /users/:id` — update a Mongo-backed user; body may include `{ name, email }`
+- `DELETE /users/:id` — delete a Mongo-backed user
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
