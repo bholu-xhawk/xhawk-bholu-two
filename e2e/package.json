@@ -1,0 +1,15 @@
+{
+  "name": "portfolio-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/run-tests.js",
+    "test:headed": "node scripts/run-tests.js --headed",
+    "test:ui": "node scripts/run-tests.js --ui",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "mongodb-memory-server": "9.0.0"
+  }
+}
