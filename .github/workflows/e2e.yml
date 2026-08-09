@@ -1,0 +1,54 @@
+name: E2E
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend
+
+      - name: Install Node API dependencies
+        run: npm install --prefix node_api
+
+      - name: Install E2E dependencies
+        run: npm install --prefix e2e
+
+      - name: Install Playwright Chromium
+        run: npm run install:browsers --prefix e2e -- --with-deps
+
+      - name: Run E2E tests
+        run: npm test --prefix e2e
+        env:
+          E2E_USE_EXISTING_MONGO: '1'
