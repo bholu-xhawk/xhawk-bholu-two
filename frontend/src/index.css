@@ -22,3 +22,28 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helve
 .contact-form input, .contact-form textarea { padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
 .contact-form button { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 0.6rem 0.9rem; cursor: pointer; }
 .contact-form button:hover { background: #1d4ed8; }
+
+.book-form-card, .book-table-card { margin-top: 1rem; }
+.book-form-card h2, .book-table-card h2 { margin: 0 0 0.75rem; }
+.book-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; align-items: end; }
+.book-form label { display: grid; gap: 0.35rem; font-weight: 600; }
+.book-form input { padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+.book-form-actions, .row-actions, .pagination-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.book-form button, .row-actions button, .pagination-controls button { border: none; border-radius: 8px; padding: 0.55rem 0.8rem; cursor: pointer; font: inherit; }
+.book-form button, .pagination-controls button { background: #2563eb; color: white; }
+.book-form button:hover, .pagination-controls button:hover { background: #1d4ed8; }
+.book-form button:disabled, .pagination-controls button:disabled { background: #94a3b8; cursor: not-allowed; }
+.secondary-button { background: #e2e8f0 !important; color: #0f172a !important; }
+.secondary-button:hover { background: #cbd5e1 !important; }
+.danger-button { background: #dc2626; color: white; }
+.danger-button:hover { background: #b91c1c; }
+.book-message { margin: 1rem 0; padding: 0.75rem 1rem; border-radius: 8px; background: #e0f2fe; color: #075985; }
+.error-message { background: #fee2e2; color: #991b1b; }
+.book-table-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+.book-table-header span { color: #64748b; }
+.table-wrap { overflow-x: auto; }
+.book-table { width: 100%; border-collapse: collapse; }
+.book-table th, .book-table td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.book-table th { color: #475569; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.empty-cell { color: #64748b; text-align: center !important; }
+.pagination-controls { justify-content: flex-end; margin-top: 1rem; }

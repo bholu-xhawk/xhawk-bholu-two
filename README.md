@@ -70,5 +70,40 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - `PATCH /users/:id` — update a user; body may include `{ name, email }`
 - `DELETE /users/:id` — delete a user
 
+### Book API endpoints
+
+Books have `title`, `author`, and `price` fields. `title` and `author` are required strings, and `price` is a required non-negative number.
+
+- `GET /books?page=1&limit=20` — list books newest first. `page` defaults to `1`; `limit` defaults to `20` and is capped at `100`.
+- `POST /books` — create a book; body: `{ "title": "Dune", "author": "Frank Herbert", "price": 9.5 }`
+- `PATCH /books/:id` — update a book; body may include `{ title, author, price }`
+- `DELETE /books/:id` — delete a book
+
+Paginated list responses use this shape:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "limit": 20,
+  "totalPages": 0
+}
+```
+
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
+
+## React frontend
+
+The Vite/React frontend includes a `/books` page for browsing, adding, editing, deleting, and paging through books 20 at a time.
+
+- Install dependencies: `npm install --prefix frontend`
+- Start the dev server: `npm run dev --prefix frontend`
+- Build for production: `npm run build --prefix frontend`
+
+The frontend calls the Node API at `http://localhost:3000` by default. Set `VITE_API_BASE_URL` before starting or building the frontend to point at a different API origin:
+
+```
+VITE_API_BASE_URL=http://localhost:3000 npm run dev --prefix frontend
+```
 
