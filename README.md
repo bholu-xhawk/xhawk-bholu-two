@@ -1,6 +1,6 @@
 # FastAPI Hello World API
 
-This is a minimal FastAPI application with a single endpoint and a basic test.
+This is a minimal FastAPI application with health and mock TODO-style endpoints plus basic tests.
 
 ## Setup
 
@@ -13,13 +13,18 @@ pip install -r requirements.txt
 
 ## Run the server
 
-Start the development server with uvicorn:
+Start the lightweight API server with uvicorn:
 
 ```
-uvicorn app.main:app --reload
+uvicorn api.app:app --reload
 ```
 
-Visit http://127.0.0.1:8000/ to see the Hello World response.
+Visit http://127.0.0.1:8000/health to see the health response.
+
+## FastAPI endpoints
+
+- `GET /health` — returns `{ "status": "ok" }`.
+- `GET /todo/user` — returns static mock user data with `id`, `name`, and `email`. This endpoint does not use a database and is separate from the MongoDB-backed Node.js User API documented below.
 
 ## Run tests
 
