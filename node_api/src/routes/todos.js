@@ -24,6 +24,12 @@ router.post('/', async (req, res) => {
     if (isBlank(title)) {
       return res.status(400).json({ error: 'title is required' });
     }
+    if (description !== undefined && typeof description !== 'string') {
+      return res.status(400).json({ error: 'description must be a string' });
+    }
+    if (completed !== undefined && typeof completed !== 'boolean') {
+      return res.status(400).json({ error: 'completed must be a boolean' });
+    }
 
     const todo = await Todo.create({ title, description, completed });
     return res.status(201).json(todo);
@@ -35,7 +41,7 @@ router.post('/', async (req, res) => {
 // List all newest first
 router.get('/', async (_req, res) => {
   try {
-    const todos = await Todo.find().sort({ createdAt: -1 }).lean();
+    const todos = await Todo.find().sort({ createdAt: -1, _id: -1 }).lean();
     return res.json(todos);
   } catch (_err) {
     return res.status(500).json({ error: 'internal error' });
@@ -67,6 +73,12 @@ router.patch('/:id', async (req, res) => {
 
   if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'title') && isBlank(req.body.title)) {
     return res.status(400).json({ error: 'title is required' });
+  }
+  if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'description') && typeof req.body.description !== 'string') {
+    return res.status(400).json({ error: 'description must be a string' });
+  }
+  if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'completed') && typeof req.body.completed !== 'boolean') {
+    return res.status(400).json({ error: 'completed must be a boolean' });
   }
 
   try {
