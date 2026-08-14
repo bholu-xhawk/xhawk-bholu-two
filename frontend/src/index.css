@@ -1,24 +1,106 @@
-/* Global Styles */
 * { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: #0f172a; background: #f8fafc; }
+html, body, #root { min-height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #ecfeff 100%);
+}
 
-.app { display: flex; flex-direction: column; min-height: 100%; }
-.navbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #0f172a; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-.navbar a { color: #cbd5e1; text-decoration: none; margin-right: 1rem; }
-.navbar a.active, .navbar a:hover { color: #fff; }
-.nav-brand a { font-weight: 700; color: #fff; }
-.nav-links { display: flex; gap: 0.75rem; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.65; }
 
-.page-container { flex: 1; padding: 2rem 1rem; max-width: 960px; width: 100%; margin: 0 auto; }
-.page h1 { margin-top: 0; font-size: 2.25rem; }
-.page p { line-height: 1.6; }
+.app { min-height: 100vh; }
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: rgba(15, 23, 42, 0.94);
+  color: white;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.22);
+}
+.nav-brand { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
+.nav-subtitle { color: #cbd5e1; font-size: 0.95rem; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
-.card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-.card h3 { margin: 0 0 0.5rem 0; }
+.page-container {
+  width: min(920px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
 
-.contact-form { display: grid; gap: 0.75rem; max-width: 480px; }
-.contact-form input, .contact-form textarea { padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
-.contact-form button { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 0.6rem 0.9rem; cursor: pointer; }
-.contact-form button:hover { background: #1d4ed8; }
+.todo-app { display: grid; gap: 1.25rem; }
+.hero-card, .todo-form, .todo-card, .empty-state, .status-message {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+.hero-card { padding: clamp(1.5rem, 4vw, 2.5rem); }
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hero-card h1 { margin: 0; font-size: clamp(2.25rem, 8vw, 4.25rem); letter-spacing: -0.06em; }
+.hero-copy { max-width: 680px; color: #475569; line-height: 1.7; }
+
+.todo-form { display: grid; gap: 0.75rem; padding: 1.25rem; }
+.todo-form label, .edit-form label { color: #334155; font-weight: 700; }
+input, textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #172033;
+  background: white;
+  padding: 0.75rem 0.9rem;
+}
+input:focus, textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  outline: none;
+}
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  color: white;
+  background: #2563eb;
+  font-weight: 800;
+}
+button:hover:not(:disabled) { background: #1d4ed8; }
+button.secondary { color: #172033; background: #e2e8f0; }
+button.secondary:hover:not(:disabled) { background: #cbd5e1; }
+button.danger { background: #dc2626; }
+button.danger:hover:not(:disabled) { background: #b91c1c; }
+
+.status-message, .empty-state { padding: 1rem 1.25rem; color: #475569; }
+.status-message.error { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
+
+.todo-list { display: grid; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+.todo-card { display: grid; gap: 1rem; padding: 1.25rem; }
+.todo-card.completed { background: rgba(240, 253, 244, 0.92); }
+.todo-content h2 { margin: 0.65rem 0 0.35rem; font-size: 1.25rem; }
+.todo-content p { margin: 0 0 0.75rem; color: #475569; line-height: 1.6; }
+.todo-content time { color: #64748b; font-size: 0.85rem; }
+.todo-card.completed h2 { color: #15803d; text-decoration: line-through; }
+.checkbox-label { display: inline-flex; align-items: center; gap: 0.5rem; color: #475569; font-weight: 700; }
+.checkbox-label input { width: auto; accent-color: #16a34a; }
+.todo-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.edit-form { display: grid; gap: 0.75rem; }
+
+@media (min-width: 720px) {
+  .todo-card { grid-template-columns: 1fr auto; align-items: start; }
+  .edit-form { grid-column: 1 / -1; }
+  .todo-actions { justify-content: flex-end; }
+}
+
+@media (max-width: 560px) {
+  .navbar { align-items: flex-start; flex-direction: column; }
+  .nav-subtitle { font-size: 0.85rem; }
+}
