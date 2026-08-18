@@ -21,6 +21,16 @@ uvicorn app.main:app --reload
 
 Visit http://127.0.0.1:8000/ to see the Hello World response.
 
+## Development
+
+Start the frontend development server with Vite:
+
+```
+npm run dev --prefix frontend
+```
+
+The frontend dev server runs on port `5173` and is available at http://localhost:5173/.
+
 ## Run tests
 
 Execute the test suite with pytest:
