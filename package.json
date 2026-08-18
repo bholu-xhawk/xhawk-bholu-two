@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-booklist-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "test": "npm test --prefix node_api",
+    "test:e2e": "npm run test:e2e --prefix frontend"
+  }
+}
