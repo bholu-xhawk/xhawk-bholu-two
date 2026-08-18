@@ -36,8 +36,8 @@ function normalizeBookForm(form) {
     imageUrl: form.imageUrl.trim(),
   }
 
-  if (form.year !== '') payload.year = Number(form.year)
-  if (form.rating !== '') payload.rating = Number(form.rating)
+  payload.year = form.year === '' ? null : Number(form.year)
+  payload.rating = form.rating === '' ? null : Number(form.rating)
 
   return payload
 }

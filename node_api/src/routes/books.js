@@ -4,6 +4,7 @@ const Book = require('../models/Book');
 
 const defaultBooks = [
   {
+    _id: new mongoose.Types.ObjectId('000000000000000000000001'),
     title: 'The Pragmatic Programmer',
     author: 'Andrew Hunt and David Thomas',
     genre: 'Software Engineering',
@@ -13,6 +14,7 @@ const defaultBooks = [
     description: 'Practical advice for improving the craft of software development.',
   },
   {
+    _id: new mongoose.Types.ObjectId('000000000000000000000002'),
     title: 'Clean Code',
     author: 'Robert C. Martin',
     genre: 'Software Engineering',
@@ -22,6 +24,7 @@ const defaultBooks = [
     description: 'A handbook of agile software craftsmanship and code quality practices.',
   },
   {
+    _id: new mongoose.Types.ObjectId('000000000000000000000003'),
     title: 'Designing Data-Intensive Applications',
     author: 'Martin Kleppmann',
     genre: 'Distributed Systems',
@@ -30,6 +33,29 @@ const defaultBooks = [
     description: 'A deep guide to modern data systems, reliability, scalability, and maintainability.',
   },
 ];
+
+let seedDefaultsPromise = null;
+
+function seedDefaultsIfEmpty() {
+  if (!seedDefaultsPromise) {
+    seedDefaultsPromise = (async () => {
+      const count = await Book.countDocuments();
+      if (count === 0) {
+        await Book.bulkWrite(defaultBooks.map((book) => ({
+          updateOne: {
+            filter: { _id: book._id },
+            update: { $setOnInsert: book },
+            upsert: true,
+          },
+        })));
+      }
+    })().finally(() => {
+      seedDefaultsPromise = null;
+    });
+  }
+
+  return seedDefaultsPromise;
+}
 
 function buildBookPayload(body = {}, { requireRequired = false } = {}) {
   const payload = {};
@@ -40,10 +66,22 @@ function buildBookPayload(body = {}, { requireRequired = false } = {}) {
   }
 
   if (body.year !== undefined && body.year !== null && body.year !== '') {
-    payload.year = Number(body.year);
+    const year = Number(body.year);
+    if (!Number.isFinite(year)) {
+      const error = new Error('year must be a number');
+      error.status = 400;
+      throw error;
+    }
+    payload.year = year;
   }
   if (body.rating !== undefined && body.rating !== null && body.rating !== '') {
-    payload.rating = Number(body.rating);
+    const rating = Number(body.rating);
+    if (!Number.isFinite(rating)) {
+      const error = new Error('rating must be a number');
+      error.status = 400;
+      throw error;
+    }
+    payload.rating = rating;
   }
 
   if (requireRequired && (!payload.title || !payload.author)) {
@@ -88,10 +126,7 @@ router.post('/bulk-delete', async (req, res) => {
 
 // List all, seeding defaults for first-run use
 router.get('/', async (_req, res) => {
-  const count = await Book.countDocuments();
-  if (count === 0) {
-    await Book.insertMany(defaultBooks);
-  }
+  await seedDefaultsIfEmpty();
   const books = await Book.find().sort({ title: 1, author: 1 }).lean();
   return res.json(books);
 });
@@ -132,11 +167,21 @@ router.patch('/:id', async (req, res) => {
   }
 
   try {
-    const updates = buildBookPayload(req.body);
-    const book = await Book.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+    const body = req.body || {};
+    const updates = buildBookPayload(body);
+    const unset = {};
+    if (body.year === null) unset.year = '';
+    if (body.rating === null) unset.rating = '';
+    const update = Object.keys(unset).length
+      ? { ...(Object.keys(updates).length ? { $set: updates } : {}), $unset: unset }
+      : updates;
+    const book = await Book.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     if (!book) return res.status(404).json({ error: 'not found' });
     return res.json(book);
   } catch (err) {
+    if (err && err.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
     if (err && err.name === 'ValidationError') {
       return res.status(400).json({ error: err.message });
     }
