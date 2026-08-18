@@ -5,6 +5,8 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import About from './pages/About'
 import Projects from './pages/Projects'
+import Booklist from './pages/Booklist'
+import BookDetails from './pages/BookDetails'
 import Contact from './pages/Contact'
 import Setup from './pages/Setup'
 import Skills from './pages/Skills'
@@ -24,6 +26,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/booklist" element={<Booklist />} />
+            <Route path="/booklist/:id" element={<BookDetails />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/setup" element={<Setup />} />
             <Route path="/skills" element={<Skills />} />

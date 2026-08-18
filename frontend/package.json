@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "if [ -d ../.browser-libs ]; then FONTCONFIG_SYSROOT=../.browser-libs FONTCONFIG_FILE=../.browser-libs/etc/fonts/fonts.conf FONTCONFIG_PATH=../.browser-libs/etc/fonts LD_LIBRARY_PATH=../.browser-libs/usr/lib/x86_64-linux-gnu:../.browser-libs/lib/x86_64-linux-gnu playwright test; else playwright test; fi"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -15,7 +16,9 @@
     "framer-motion": "^10.18.0"
   },
   "devDependencies": {
-    "vite": "^5.2.0",
-    "@vitejs/plugin-react": "^4.2.0"
+    "@playwright/test": "^1.62.1",
+    "@vitejs/plugin-react": "^4.2.0",
+    "mongodb-memory-server": "^11.2.0",
+    "vite": "^5.2.0"
   }
 }
