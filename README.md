@@ -1,8 +1,8 @@
 # FastAPI Hello World API
 
-This is a minimal FastAPI application with a single endpoint and a basic test.
+This repository contains two small FastAPI services, a React/Vite portfolio frontend, and a separate Express/MongoDB API.
 
-## Setup
+## Python setup
 
 - Create a virtual environment (optional but recommended)
 - Install dependencies:
@@ -11,23 +11,81 @@ This is a minimal FastAPI application with a single endpoint and a basic test.
 pip install -r requirements.txt
 ```
 
-## Run the server
+## Run the FastAPI server
 
-Start the development server with uvicorn:
+Start the root FastAPI development server with uvicorn:
 
 ```
 uvicorn app.main:app --reload
 ```
 
-Visit http://127.0.0.1:8000/ to see the Hello World response.
+Visit http://127.0.0.1:8000/ to see the Hello World response. The second FastAPI app exposes `GET /health` from `api.app:app`.
 
-## Run tests
+## Run Python tests
 
-Execute the test suite with pytest:
+Execute the Python test suite with pytest:
 
 ```
 pytest -q
 ```
+
+---
+
+## Frontend
+
+The portfolio frontend lives under `frontend/` and uses Vite.
+
+### Install and run the frontend
+
+- Install dependencies:
+  - `npm install --prefix frontend`
+- Run the development server:
+  - `npm run dev --prefix frontend`
+- Build the production bundle:
+  - `npm run build --prefix frontend`
+
+---
+
+## End-to-end tests
+
+Playwright E2E tests live in `frontend/e2e/` and are launched from the frontend workspace. The suite starts all required services automatically:
+
+| Service | Test port | Playwright startup command |
+| --- | --- | --- |
+| Vite frontend | `4173` | `npm run dev -- --host 127.0.0.1 --port 4173` |
+| FastAPI root app (`app.main:app`) | `8010` | `python -m uvicorn app.main:app --host 127.0.0.1 --port 8010` |
+| FastAPI health app (`api.app:app`) | `8011` | `python -m uvicorn api.app:app --host 127.0.0.1 --port 8011` |
+| Express API (`node_api/src/index.js`) | `3010` | `node frontend/e2e/support/node-api-memory-server.mjs` |
+
+The Express API is run through `frontend/e2e/support/node-api-memory-server.mjs`. That wrapper starts a disposable `MongoMemoryServer`, passes its URI to the existing Node API process with `MONGODB_URI`, proxies the child logs, and stops both MongoDB and the child process when Playwright exits. The wrapper defaults MongoDB Memory Server to a MongoDB 7.0.14 Ubuntu 22.04 binary so it runs on modern OpenSSL environments. Docker MongoDB is not required for the E2E suite.
+
+### E2E prerequisites
+
+In a fresh checkout, install both JavaScript workspaces and the Playwright browser used by `frontend/playwright.config.js`:
+
+```
+npm install --prefix frontend
+npm install --prefix node_api
+npx --prefix frontend playwright install --with-deps chromium
+```
+
+Python dependencies must also be installed so Playwright can start the FastAPI apps with uvicorn.
+
+### Run E2E tests
+
+Headless run:
+
+```
+npm run test:e2e --prefix frontend
+```
+
+Interactive UI mode for debugging:
+
+```
+npm run test:e2e:ui --prefix frontend
+```
+
+The E2E suite covers portfolio route navigation, direct URL visits, the Contact form workflow, both FastAPI HTTP endpoints, and the Express User CRUD/error workflow against in-memory MongoDB.
 
 ---
 
@@ -40,6 +98,7 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - Start a local MongoDB instance using Docker:
   - `docker-compose up -d mongo`
 - This exposes MongoDB on `localhost:27017` and persists data in a named volume.
+- Docker is only needed for local/manual Node API runs that use a long-lived MongoDB instance; automated Node API tests and Playwright E2E tests use in-memory MongoDB.
 
 ### Environment variables
 
