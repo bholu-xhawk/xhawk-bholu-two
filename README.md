@@ -1,74 +1,110 @@
-# FastAPI Hello World API
+# Shared Expense App
 
-This is a minimal FastAPI application with a single endpoint and a basic test.
+This repo contains a Splitwise-style shared expense product with an Express + MongoDB API and a Vite React frontend. Users register or log in, create groups, add members, enter equal or custom-split expenses, view simplified balances, record settlements, and receive in-app settlement reminders.
 
-## Setup
+The older FastAPI hello-world services remain in `app/` and `api/`, but the product implementation lives in `node_api/` and `frontend/`.
 
-- Create a virtual environment (optional but recommended)
-- Install dependencies:
+## Architecture
 
+- `node_api/`: Express API backed by MongoDB through Mongoose.
+- `frontend/`: Mobile-first React single-page app.
+- `docker-compose.yml`: Local MongoDB service for manual development.
+- `node_api/test/`: Jest + Supertest integration tests using `mongodb-memory-server`, so tests do not require Docker.
+
+## Mongo collections
+
+The Node API models the expense-sharing domain explicitly:
+
+- `users`: authenticated accounts with normalized email, password hash, default currency, and notification preferences.
+- `groups`: group metadata, base currency, member references, and roles.
+- `expenses`: payer, participants, split type, shares, original currency, FX rate, and converted minor-unit amount.
+- `balances`: materialized simplified pairwise debts for each group.
+- `settlements`: repayments between group members.
+- `notifications`: unread/read in-app reminder events.
+- `exchangerates`: optional stored/manual rates for cross-currency expenses.
+
+All money is represented as integer minor units plus a currency code. Balance math recomputes deterministically from expenses and settlements.
+
+## Environment variables
+
+Copy the example file and adjust values:
+
+```bash
+cp node_api/.env.example node_api/.env
 ```
-pip install -r requirements.txt
+
+Required/commonly used values:
+
+- `MONGODB_URI` — defaults to `mongodb://localhost:27017/node_api`.
+- `JWT_SECRET` — required for authenticated flows; use a long random secret outside local development.
+- `JWT_EXPIRES_IN` — JWT lifetime, default `7d`.
+- `DEFAULT_CURRENCY` — default account/group currency, default `USD`.
+- `EXCHANGE_RATE_API_URL` and `EXCHANGE_RATE_API_KEY` — optional future live-rate provider settings. The current app works with same-currency or manually stored rates.
+
+If running the API in a container on the same Docker network as Mongo, use `MONGODB_URI=mongodb://mongo:27017/node_api`.
+
+## Local development
+
+Install dependencies:
+
+```bash
+npm install --prefix node_api
+npm install --prefix frontend
 ```
 
-## Run the server
+Start MongoDB for manual development:
 
-Start the development server with uvicorn:
-
-```
-uvicorn app.main:app --reload
+```bash
+docker-compose up -d mongo
 ```
 
-Visit http://127.0.0.1:8000/ to see the Hello World response.
+Run the API and frontend in separate terminals:
 
-## Run tests
-
-Execute the test suite with pytest:
-
-```
-pytest -q
+```bash
+npm start --prefix node_api
+npm run dev --prefix frontend
 ```
 
----
+The API defaults to `http://localhost:3000`. The frontend uses `VITE_API_BASE_URL` when set, otherwise it calls `http://localhost:3000`.
 
-## Node.js API with MongoDB (Mongoose)
+## API endpoints
 
-A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
+- `GET /` and `GET /health` — API identity and health.
+- `POST /auth/register` — create account and receive JWT.
+- `POST /auth/login` — authenticate and receive JWT.
+- `GET /me` and `GET /users/me` — current profile.
+- `PATCH /users/me` — update current profile settings.
+- `GET /groups` / `POST /groups` — list and create groups.
+- `GET /groups/:groupId` — group detail for members.
+- `POST /groups/:groupId/members` — owner-only member add by email.
+- `GET /groups/:groupId/expenses` / `POST /groups/:groupId/expenses` — list and create expenses.
+- `GET /groups/:groupId/balances` — simplified balances.
+- `POST /groups/:groupId/balances/recompute` — force recomputation.
+- `GET /groups/:groupId/settlements` / `POST /groups/:groupId/settlements` — list and record repayments.
+- `POST /groups/:groupId/notifications/reminders` — create in-app reminders for unsettled balances.
+- `GET /notifications` — list current user's notifications.
+- `PATCH /notifications/:notificationId/read` — mark a notification read.
 
-### MongoDB with docker-compose
+All product endpoints except registration/login/root/health require `Authorization: Bearer <token>`. Group-scoped routes also require group membership.
 
-- Start a local MongoDB instance using Docker:
-  - `docker-compose up -d mongo`
-- This exposes MongoDB on `localhost:27017` and persists data in a named volume.
+## Tests and build
 
-### Environment variables
+Run the backend integration tests:
 
-- Copy `node_api/.env.example` to `.env` and adjust as needed:
-  - `cp node_api/.env.example node_api/.env`
-- By default the app will use `MONGODB_URI=mongodb://localhost:27017/node_api`.
-- If running the API in a container on the same docker network, use `mongodb://mongo:27017/node_api`.
+```bash
+npm test --prefix node_api
+```
 
-### Install and run the Node API
+Build the frontend:
 
-- Install dependencies:
-  - `npm install --prefix node_api`
-- Run the server (defaults to port 3000):
-  - `npm start --prefix node_api`
-- Run in dev mode with hot reload:
-  - `npm run dev --prefix node_api`
+```bash
+npm run build --prefix frontend
+```
 
-### Run Node API tests
+The root scripts used by the final gate are also available:
 
-- The tests use an in-memory MongoDB server and do not require Docker:
-  - `npm test --prefix node_api`
-
-### User API endpoints
-
-- `GET /users` — list all users
-- `GET /users/:id` — fetch a user by id
-- `POST /users` — create a user; body: `{ name, email }`
-- `PATCH /users/:id` — update a user; body may include `{ name, email }`
-- `DELETE /users/:id` — delete a user
-
-Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
+```bash
+npm test
+npm run build
+```
 
