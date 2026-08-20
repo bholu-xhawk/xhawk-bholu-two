@@ -1,39 +1,41 @@
 import React from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
-import Home from './pages/Home'
-import About from './pages/About'
-import Projects from './pages/Projects'
-import Contact from './pages/Contact'
-import Setup from './pages/Setup'
-import Skills from './pages/Skills'
-import Experience from './pages/Experience'
-import Blog from './pages/Blog'
-import Resume from './pages/Resume'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import Dashboard from './pages/Dashboard'
+import GroupDetail from './pages/GroupDetail'
+import Login from './pages/Login'
+import Notifications from './pages/Notifications'
+import Register from './pages/Register'
 
-function App() {
-  const location = useLocation()
+function ProtectedRoute({ children }) {
+  const { loading, isAuthenticated } = useAuth()
+  if (loading) return <main className="page-container"><div className="card">Loading your account…</div></main>
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  return children
+}
 
+function AppRoutes() {
   return (
     <div className="app">
       <Navbar />
-      <div className="page-container">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/setup" element={<Setup />} />
-            <Route path="/skills" element={<Skills />} />
-            <Route path="/experience" element={<Experience />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/resume" element={<Resume />} />
-          </Routes>
-        </AnimatePresence>
-      </div>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/groups/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 

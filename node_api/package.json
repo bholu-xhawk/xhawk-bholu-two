@@ -1,7 +1,7 @@
 {
-  "name": "node-api-hello-world",
+  "name": "shared-expense-api",
   "version": "1.0.0",
-  "description": "Simple Express Hello World API with Jest + Supertest tests",
+  "description": "Express and MongoDB API for shared expenses, balances, settlements, and reminders",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -9,15 +9,18 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^7.6.0",
-    "dotenv": "^16.4.5"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^6.3.4",
     "mongodb-memory-server": "^9.0.0",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "supertest": "^6.3.4"
   },
   "jest": {
     "testEnvironment": "node"

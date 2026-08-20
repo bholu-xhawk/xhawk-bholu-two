@@ -1,0 +1,9 @@
+{
+  "name": "shared-expense-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend install --no-package-lock && npm --prefix frontend run build",
+    "test": "npm --prefix node_api install && npm --prefix node_api test"
+  }
+}

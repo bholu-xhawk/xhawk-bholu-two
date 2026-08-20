@@ -1,71 +1,34 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
-const User = require('../models/User');
+const { z } = require('zod');
+const { requireAuth } = require('../middleware/auth');
+const { publicUser } = require('../services/authService');
 
-// Create
-router.post('/', async (req, res) => {
+const profileSchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  defaultCurrency: z.string().length(3).optional(),
+  notificationPreferences: z.object({ inAppReminders: z.boolean().optional() }).optional(),
+});
+
+router.use(requireAuth);
+
+router.get('/me', (req, res) => res.json({ user: publicUser(req.user) }));
+
+router.patch('/me', async (req, res, next) => {
   try {
-    const { name, email } = req.body || {};
-    if (!name || !email) {
-      return res.status(400).json({ error: 'name and email are required' });
+    const input = profileSchema.parse(req.body || {});
+    if (input.name) req.user.name = input.name;
+    if (input.defaultCurrency) req.user.defaultCurrency = input.defaultCurrency.toUpperCase();
+    if (input.notificationPreferences) {
+      req.user.notificationPreferences = {
+        ...req.user.notificationPreferences,
+        ...input.notificationPreferences,
+      };
     }
-    const user = await User.create({ name, email });
-    return res.status(201).json(user);
+    await req.user.save();
+    return res.json({ user: publicUser(req.user) });
   } catch (err) {
-    if (err && err.code === 11000) {
-      return res.status(409).json({ error: 'email already exists' });
-    }
-    return res.status(500).json({ error: 'internal error' });
+    return next(err);
   }
-});
-
-// List all
-router.get('/', async (_req, res) => {
-  const users = await User.find().lean();
-  return res.json(users);
-});
-
-// Get by id
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
-  const user = await User.findById(id);
-  if (!user) return res.status(404).json({ error: 'not found' });
-  return res.json(user);
-});
-
-// Update partial
-router.patch('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
-  const updates = {};
-  if (req.body && typeof req.body.name === 'string') updates.name = req.body.name;
-  if (req.body && typeof req.body.email === 'string') updates.email = req.body.email;
-  try {
-    const user = await User.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-    if (!user) return res.status(404).json({ error: 'not found' });
-    return res.json(user);
-  } catch (err) {
-    if (err && err.code === 11000) {
-      return res.status(409).json({ error: 'email already exists' });
-    }
-    return res.status(500).json({ error: 'internal error' });
-  }
-});
-
-// Delete
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'invalid id' });
-  }
-  const deleted = await User.findByIdAndDelete(id);
-  if (!deleted) return res.status(404).json({ error: 'not found' });
-  return res.status(204).send();
 });
 
 module.exports = router;
