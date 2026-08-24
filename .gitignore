@@ -1,0 +1,13 @@
+node_modules/
+**/node_modules/
+
+# Build output
+frontend/dist/
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/
+
+# Local sandbox/tooling caches
+.apt/
+.playwright-deps/
