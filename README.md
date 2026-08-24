@@ -23,10 +23,45 @@ Visit http://127.0.0.1:8000/ to see the Hello World response.
 
 ## Run tests
 
-Execute the test suite with pytest:
+Execute the FastAPI test suite with pytest:
 
 ```
 pytest -q
+```
+
+The Node API tests still run from the `node_api/` package:
+
+```
+npm test --prefix node_api
+```
+
+## Frontend browser E2E tests
+
+The React/Vite frontend has Playwright smoke coverage under `frontend/e2e/`.
+
+Install frontend dependencies and Chromium before running the browser tests locally:
+
+```
+npm install --prefix frontend
+npx --prefix frontend playwright install --with-deps chromium
+```
+
+Run the headless E2E suite:
+
+```
+npm run test:e2e --prefix frontend
+```
+
+Open Playwright UI mode for local debugging:
+
+```
+npm run test:e2e:ui --prefix frontend
+```
+
+The frontend build remains available with:
+
+```
+npm run build --prefix frontend
 ```
 
 ---
