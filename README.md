@@ -46,6 +46,7 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - Copy `node_api/.env.example` to `.env` and adjust as needed:
   - `cp node_api/.env.example node_api/.env`
 - By default the app will use `MONGODB_URI=mongodb://localhost:27017/node_api`.
+- Set `XHAWK_BHOLU_API_BASE_URL` to the origin of the first xhawk-bholu API when it is not available at `http://localhost:3001`.
 - If running the API in a container on the same docker network, use `mongodb://mongo:27017/node_api`.
 
 ### Install and run the Node API
@@ -71,4 +72,9 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - `DELETE /users/:id` — delete a user
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
+
+### Portfolio frontend configuration
+
+- Set `VITE_NODE_API_BASE_URL` to the Node API origin when the frontend is not served behind the same origin.
+- The Team page reads the sanitized directory through `GET /directory/users`.
 
