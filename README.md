@@ -21,6 +21,17 @@ uvicorn app.main:app --reload
 
 Visit http://127.0.0.1:8000/ to see the Hello World response.
 
+
+## Book API endpoints
+
+The FastAPI service also exposes the book contract used by the React frontend:
+
+- `GET /books` — list books as `[{ id, name, details, authors, starred }]`
+- `PATCH /books/{id}/star` — update a book favorite flag; body: `{ "starred": true }`
+
+`authors` may be either a string or an array of strings. The development server still
+runs at `http://localhost:8000` when started with `uvicorn app.main:app --reload`.
+
 ## Run tests
 
 Execute the test suite with pytest:
