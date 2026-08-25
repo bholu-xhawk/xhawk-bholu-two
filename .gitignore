@@ -1,0 +1,8 @@
+node_modules/
+frontend/node_modules/
+node_api/node_modules/
+frontend/dist/
+coverage/
+.pytest_cache/
+__pycache__/
+*.py[cod]
