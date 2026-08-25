@@ -15,6 +15,7 @@ const Navbar = () => {
         <NavLink to="/experience" className={({ isActive }) => isActive ? 'active' : undefined}>Experience</NavLink>
         <NavLink to="/blog" className={({ isActive }) => isActive ? 'active' : undefined}>Blog</NavLink>
         <NavLink to="/resume" className={({ isActive }) => isActive ? 'active' : undefined}>Resume</NavLink>
+        <NavLink to="/team" className={({ isActive }) => isActive ? 'active' : undefined}>Team</NavLink>
         <NavLink to="/setup" className={({ isActive }) => isActive ? 'active' : undefined}>Setup</NavLink>
         <NavLink to="/contact" className={({ isActive }) => isActive ? 'active' : undefined}>Contact</NavLink>
       </div>
