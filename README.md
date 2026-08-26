@@ -72,3 +72,40 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
+
+---
+
+## Frontend E2E tests (Playwright)
+
+The Vite portfolio frontend has Playwright smoke tests under `frontend/e2e/`. The tests start the app on `http://127.0.0.1:4174` using `frontend/playwright.config.js` and exercise public navbar routes without requiring API services, Docker, or seeded data.
+
+### Install and run
+
+Install frontend dependencies from the repository root:
+
+```
+npm install --prefix frontend
+```
+
+Before the first local or CI browser run, install Chromium if it is not already installed:
+
+```
+npm --prefix frontend exec playwright install chromium
+```
+
+Linux CI images may also need Playwright's system packages installed before Chromium can launch:
+
+```
+npm --prefix frontend exec playwright install-deps chromium
+```
+
+Run the frontend build and E2E suite:
+
+```
+npm run build --prefix frontend
+npm run e2e --prefix frontend
+```
+
+### Adding tests
+
+Add new Playwright specs as `*.spec.js` files under `frontend/e2e/`. Prefer user-facing selectors such as `page.getByRole(...)` and visible text assertions over CSS selectors so tests describe the behavior a visitor can observe and remain stable as markup changes.
