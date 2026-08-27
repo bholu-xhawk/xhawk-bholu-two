@@ -1,74 +1,83 @@
-# FastAPI Hello World API
+# Full-stack Todo Demo
 
-This is a minimal FastAPI application with a single endpoint and a basic test.
+This repository contains a small Python FastAPI app, a MongoDB-backed Node/Express API, and a React/Vite frontend. The active Todo feature uses the Express API in `node_api/` and the Vite app in `frontend/`.
 
-## Setup
+## Python FastAPI app
 
-- Create a virtual environment (optional but recommended)
-- Install dependencies:
+Install dependencies and run the existing smoke tests:
 
-```
+```sh
 pip install -r requirements.txt
-```
-
-## Run the server
-
-Start the development server with uvicorn:
-
-```
-uvicorn app.main:app --reload
-```
-
-Visit http://127.0.0.1:8000/ to see the Hello World response.
-
-## Run tests
-
-Execute the test suite with pytest:
-
-```
 pytest -q
 ```
 
----
+Start the FastAPI development server:
 
-## Node.js API with MongoDB (Mongoose)
+```sh
+uvicorn app.main:app --reload
+```
 
-A separate Node.js Express service is provided under `node_api/` with its own tests and a MongoDB-backed User API.
+Visit `http://127.0.0.1:8000/` for the Hello World response.
+
+## Node.js API with MongoDB
+
+The Express API exposes a public Todo REST resource at `/api/todos` and the existing User API at `/users`.
 
 ### MongoDB with docker-compose
 
-- Start a local MongoDB instance using Docker:
-  - `docker-compose up -d mongo`
-- This exposes MongoDB on `localhost:27017` and persists data in a named volume.
+Start a local MongoDB instance using Docker:
+
+```sh
+docker-compose up -d mongo
+```
+
+This exposes MongoDB on `localhost:27017` and persists data in a named volume.
 
 ### Environment variables
 
-- Copy `node_api/.env.example` to `.env` and adjust as needed:
-  - `cp node_api/.env.example node_api/.env`
-- By default the app will use `MONGODB_URI=mongodb://localhost:27017/node_api`.
-- If running the API in a container on the same docker network, use `mongodb://mongo:27017/node_api`.
+Copy the example environment file and adjust as needed:
 
-### Install and run the Node API
+```sh
+cp node_api/.env.example node_api/.env
+```
 
-- Install dependencies:
-  - `npm install --prefix node_api`
-- Run the server (defaults to port 3000):
-  - `npm start --prefix node_api`
-- Run in dev mode with hot reload:
-  - `npm run dev --prefix node_api`
+Defaults:
 
-### Run Node API tests
+- `MONGODB_URI=mongodb://localhost:27017/node_api`
+- `PORT=3000`
+- `CORS_ORIGIN=http://localhost:5173`
 
-- The tests use an in-memory MongoDB server and do not require Docker:
-  - `npm test --prefix node_api`
+If running the API in a container on the same docker network, use `mongodb://mongo:27017/node_api`.
 
-### User API endpoints
+### Install, run, and test the Node API
 
-- `GET /users` — list all users
-- `GET /users/:id` — fetch a user by id
-- `POST /users` — create a user; body: `{ name, email }`
-- `PATCH /users/:id` — update a user; body may include `{ name, email }`
-- `DELETE /users/:id` — delete a user
+```sh
+npm install --prefix node_api
+npm start --prefix node_api
+npm test --prefix node_api
+```
 
-Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
+Todo endpoints:
 
+- `GET /api/todos` — list todos
+- `POST /api/todos` — create a todo with `{ "title": "..." }`
+- `PATCH /api/todos/:id` — update completion with `{ "completed": true }`
+- `DELETE /api/todos/:id` — delete a todo
+
+## React/Vite frontend
+
+Install dependencies and start the web app:
+
+```sh
+npm install --prefix frontend
+npm run dev --prefix frontend
+```
+
+The frontend defaults to `http://localhost:3000/api` for Todo API calls. Override it with `VITE_API_BASE_URL` at build/dev time or `window.__API_BASE_URL__` in tests/local customizations.
+
+Run frontend checks:
+
+```sh
+npm test --prefix frontend
+npm run build --prefix frontend
+```
