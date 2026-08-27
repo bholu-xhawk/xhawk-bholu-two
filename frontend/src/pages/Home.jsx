@@ -47,7 +47,7 @@ export default function Home() {
   async function handleAddTodo(event) {
     event.preventDefault()
     const title = newTitle.trim()
-    if (!title || isCreating) return
+    if (!title || isCreating || isLoading) return
 
     setIsCreating(true)
     setError('')
@@ -126,9 +126,9 @@ export default function Home() {
             value={newTitle}
             onChange={(event) => setNewTitle(event.target.value)}
             placeholder="Add a task"
-            disabled={isCreating}
+            disabled={isCreating || isLoading}
           />
-          <button type="submit" disabled={isCreating || !newTitle.trim()}>
+          <button type="submit" disabled={isCreating || isLoading || !newTitle.trim()}>
             {isCreating ? 'Adding…' : 'Add todo'}
           </button>
         </div>

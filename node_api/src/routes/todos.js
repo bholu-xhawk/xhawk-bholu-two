@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const Todo = require('../models/Todo');
+const { requireAuth } = require('../auth');
 
 function isValidId(id) {
   return mongoose.isValidObjectId(id);
@@ -14,14 +15,21 @@ function serialize(todo) {
     _id: id,
     title: value.title,
     completed: value.completed,
+    userId: value.userId.toString(),
     createdAt: value.createdAt,
     updatedAt: value.updatedAt,
   };
 }
 
-router.get('/todos', async (_req, res) => {
-  const todos = await Todo.find().sort({ createdAt: -1, _id: -1 }).lean();
-  return res.json(todos.map(serialize));
+router.use('/todos', requireAuth);
+
+router.get('/todos', async (req, res) => {
+  try {
+    const todos = await Todo.find({ userId: req.user.id }).sort({ createdAt: -1, _id: -1 }).lean();
+    return res.json(todos.map(serialize));
+  } catch (_err) {
+    return res.status(500).json({ error: 'internal error' });
+  }
 });
 
 router.post('/todos', async (req, res) => {
@@ -31,8 +39,12 @@ router.post('/todos', async (req, res) => {
     return res.status(422).json({ error: 'title is required' });
   }
 
-  const todo = await Todo.create({ title: title.trim() });
-  return res.status(201).json(serialize(todo));
+  try {
+    const todo = await Todo.create({ title: title.trim(), userId: req.user.id });
+    return res.status(201).json(serialize(todo));
+  } catch (_err) {
+    return res.status(500).json({ error: 'internal error' });
+  }
 });
 
 router.patch('/todos/:id', async (req, res) => {
@@ -45,14 +57,18 @@ router.patch('/todos/:id', async (req, res) => {
     return res.status(422).json({ error: 'completed must be a boolean' });
   }
 
-  const todo = await Todo.findByIdAndUpdate(
-    id,
-    { completed: req.body.completed },
-    { new: true, runValidators: true }
-  );
+  try {
+    const todo = await Todo.findOneAndUpdate(
+      { _id: id, userId: req.user.id },
+      { completed: req.body.completed },
+      { new: true, runValidators: true }
+    );
 
-  if (!todo) return res.status(404).json({ error: 'not found' });
-  return res.json(serialize(todo));
+    if (!todo) return res.status(404).json({ error: 'not found' });
+    return res.json(serialize(todo));
+  } catch (_err) {
+    return res.status(500).json({ error: 'internal error' });
+  }
 });
 
 router.delete('/todos/:id', async (req, res) => {
@@ -61,9 +77,13 @@ router.delete('/todos/:id', async (req, res) => {
     return res.status(400).json({ error: 'invalid id' });
   }
 
-  const deleted = await Todo.findByIdAndDelete(id);
-  if (!deleted) return res.status(404).json({ error: 'not found' });
-  return res.status(204).send();
+  try {
+    const deleted = await Todo.findOneAndDelete({ _id: id, userId: req.user.id });
+    if (!deleted) return res.status(404).json({ error: 'not found' });
+    return res.status(204).send();
+  } catch (_err) {
+    return res.status(500).json({ error: 'internal error' });
+  }
 });
 
 module.exports = router;

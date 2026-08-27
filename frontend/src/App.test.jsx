@@ -19,6 +19,7 @@ afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
   delete window.__API_BASE_URL__
+  delete window.__AUTH_TOKEN__
 })
 
 describe('App', () => {

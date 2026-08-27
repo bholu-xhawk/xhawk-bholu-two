@@ -25,10 +25,17 @@ async function parseResponse(response) {
   }
 }
 
+function getAuthToken() {
+  if (typeof window === 'undefined') return '';
+  return window.__AUTH_TOKEN__ || window.localStorage?.getItem('authToken') || '';
+}
+
 async function request(path, options = {}) {
+  const authToken = getAuthToken();
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...options.headers,
     },
     ...options,

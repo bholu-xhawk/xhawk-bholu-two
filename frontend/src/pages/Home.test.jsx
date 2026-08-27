@@ -25,6 +25,7 @@ afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
   delete window.__API_BASE_URL__
+  delete window.__AUTH_TOKEN__
 })
 
 describe('Home', () => {
@@ -38,6 +39,27 @@ describe('Home', () => {
     expect(screen.getByText(/loading todos/i)).toBeInTheDocument()
     expect(await screen.findByText('Ship feature')).toBeInTheDocument()
     expect(globalThis.fetch).toHaveBeenCalledWith('http://test.local/api/todos', expect.any(Object))
+  })
+
+
+  it('disables creation while the initial load is in flight', async () => {
+    let resolveLoad
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(
+      new Promise((resolve) => {
+        resolveLoad = () => resolve(jsonResponse([]))
+      })
+    )
+
+    render(<Home />)
+
+    const input = screen.getByLabelText(/new todo/i)
+    const button = screen.getByRole('button', { name: /add todo/i })
+    expect(input).toBeDisabled()
+    expect(button).toBeDisabled()
+
+    resolveLoad()
+
+    await waitFor(() => expect(input).not.toBeDisabled())
   })
 
   it('adds a todo through the API', async () => {

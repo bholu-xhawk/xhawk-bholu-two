@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const { createAuthToken } = require('../auth');
 
 // Create
 router.post('/', async (req, res) => {
@@ -10,7 +11,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'name and email are required' });
     }
     const user = await User.create({ name, email });
-    return res.status(201).json(user);
+    const value = user.toObject();
+    return res.status(201).json({ ...value, authToken: createAuthToken(user._id) });
   } catch (err) {
     if (err && err.code === 11000) {
       return res.status(409).json({ error: 'email already exists' });
