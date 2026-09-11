@@ -70,5 +70,15 @@ A separate Node.js Express service is provided under `node_api/` with its own te
 - `PATCH /users/:id` — update a user; body may include `{ name, email }`
 - `DELETE /users/:id` — delete a user
 
+### To-Do mock API endpoints
+
+The To-Do API is an in-memory, process-local mock for frontend development and tests. It does not use MongoDB and resets when the Node process restarts. To-Do responses include `id`, `title`, `description`, `completed`, and `created_at`.
+
+- `GET /todos` — list all todos
+- `GET /todos/:id` — fetch a todo by id
+- `POST /todos` — create a todo; body: `{ title, description?, completed? }`
+- `PATCH /todos/:id` — update a todo; body may include `{ title, description, completed }`
+- `DELETE /todos/:id` — delete a todo
+
 Visit http://127.0.0.1:3000/ to see the Hello World response. You can override the port by setting the `PORT` environment variable.
 
