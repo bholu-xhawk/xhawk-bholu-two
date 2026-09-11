@@ -29,6 +29,34 @@ Execute the test suite with pytest:
 pytest -q
 ```
 
+## FastAPI mock TODO API
+
+The FastAPI service under `api/` also exposes an in-memory mock TODO API for frontend development while the real backend is unavailable. The existing `GET /health` endpoint remains unchanged and returns `{"status": "ok"}`.
+
+### TODO endpoints
+
+- `POST /todos` — create a TODO; body: `{ "title": "...", "completed": false, "description": "..." }`
+- `GET /todos` — list all TODOs
+- `GET /todos/{todo_id}` — fetch one TODO by numeric ID
+- `PATCH /todos/{todo_id}` — update provided fields; body may include `{ "title", "completed", "description" }`
+- `DELETE /todos/{todo_id}` — delete a TODO and return the deleted item
+
+TODO objects include `id`, `title`, `completed`, and `description`. IDs are deterministic within the current process and the store is reset when the process restarts.
+
+### Response envelope
+
+TODO success responses use one consistent JSON envelope:
+
+```json
+{"success": true, "data": {}, "error": null}
+```
+
+Handled errors, including validation failures and missing TODOs, use the same top-level shape:
+
+```json
+{"success": false, "data": null, "error": {"code": "...", "message": "..."}}
+```
+
 ---
 
 ## Node.js API with MongoDB (Mongoose)
