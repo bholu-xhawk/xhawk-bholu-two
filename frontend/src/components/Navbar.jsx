@@ -5,10 +5,11 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <Link to="/">My Portfolio</Link>
+        <Link to="/">Todo App</Link>
       </div>
       <div className="nav-links">
-        <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : undefined}>Home</NavLink>
+        <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : undefined}>Todos</NavLink>
+        <NavLink to="/portfolio" className={({ isActive }) => isActive ? 'active' : undefined}>Portfolio</NavLink>
         <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : undefined}>About</NavLink>
         <NavLink to="/projects" className={({ isActive }) => isActive ? 'active' : undefined}>Projects</NavLink>
         <NavLink to="/skills" className={({ isActive }) => isActive ? 'active' : undefined}>Skills</NavLink>
