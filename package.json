@@ -1,0 +1,9 @@
+{
+  "name": "todo-full-stack-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "test": "npm test --prefix node_api -- --runInBand && npm test --prefix frontend -- --run"
+  }
+}
