@@ -79,7 +79,7 @@ npm test --prefix node_api -- --runInBand
 npm test --prefix frontend -- --run
 ```
 
-The Node API tests use `mongodb-memory-server`, so they do not require Docker.
+The remaining Node API Jest suite is a dependency-free Express smoke test; API routes that require MongoDB still need the local MongoDB service for manual exercise.
 
 ## Legacy FastAPI sample
 
