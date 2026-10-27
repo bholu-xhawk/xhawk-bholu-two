@@ -1,21 +1,36 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
-const Todo = require('../models/Todo');
+const todoStore = require('../store/todos');
+
+const TODO_FIELDS = new Set(['title', 'completed']);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function error(res, status, message) {
   return res.status(status).json({ error: message });
 }
 
 function validateId(res, id) {
-  if (!mongoose.isValidObjectId(id)) {
+  if (!UUID_PATTERN.test(id)) {
     error(res, 400, 'invalid id');
     return false;
   }
   return true;
 }
 
+function validateBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { error: 'request body must be a JSON object' };
+  }
+
+  const unsupported = Object.keys(body).filter((field) => !TODO_FIELDS.has(field));
+  if (unsupported.length > 0) {
+    return { error: `unsupported field: ${unsupported[0]}` };
+  }
+
+  return {};
+}
+
 function titleFromBody(body, required = false) {
-  if (!body || body.title === undefined) {
+  if (body.title === undefined) {
     return required ? { error: 'title is required' } : {};
   }
   if (typeof body.title !== 'string') {
@@ -29,66 +44,71 @@ function titleFromBody(body, required = false) {
 }
 
 function completedFromBody(body) {
-  if (!body || body.completed === undefined) return {};
+  if (body.completed === undefined) return {};
   if (typeof body.completed !== 'boolean') {
     return { error: 'completed must be a boolean' };
   }
   return { completed: body.completed };
 }
 
-router.get('/', async (_req, res) => {
-  const todos = await Todo.find().sort({ createdAt: -1, _id: -1 }).lean();
-  return res.json(todos);
+function validatedTodoFields(body, { requireTitle = false } = {}) {
+  const bodyResult = validateBody(body);
+  if (bodyResult.error) return bodyResult;
+
+  const titleResult = titleFromBody(body, requireTitle);
+  if (titleResult.error) return titleResult;
+
+  const completedResult = completedFromBody(body);
+  if (completedResult.error) return completedResult;
+
+  return { values: { ...titleResult, ...completedResult } };
+}
+
+router.get('/', (_req, res) => {
+  return res.json(todoStore.listTodos());
 });
 
-router.post('/', async (req, res) => {
-  const titleResult = titleFromBody(req.body, true);
-  if (titleResult.error) return error(res, 400, titleResult.error);
-
-  const completedResult = completedFromBody(req.body);
-  if (completedResult.error) return error(res, 400, completedResult.error);
-
-  try {
-    const todo = await Todo.create({ ...titleResult, ...completedResult });
-    return res.status(201).json(todo);
-  } catch (_err) {
-    return error(res, 400, 'invalid todo');
-  }
-});
-
-router.patch('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   const { id } = req.params;
   if (!validateId(res, id)) return undefined;
 
-  const titleResult = titleFromBody(req.body);
-  if (titleResult.error) return error(res, 400, titleResult.error);
+  const todo = todoStore.getTodo(id);
+  if (!todo) return error(res, 404, 'not found');
 
-  const completedResult = completedFromBody(req.body);
-  if (completedResult.error) return error(res, 400, completedResult.error);
+  return res.json(todo);
+});
 
-  const updates = { ...titleResult, ...completedResult };
-  if (Object.keys(updates).length === 0) {
+router.post('/', (req, res) => {
+  const result = validatedTodoFields(req.body, { requireTitle: true });
+  if (result.error) return error(res, 400, result.error);
+
+  const todo = todoStore.createTodo(result.values);
+  return res.status(201).json(todo);
+});
+
+router.patch('/:id', (req, res) => {
+  const { id } = req.params;
+  if (!validateId(res, id)) return undefined;
+
+  const result = validatedTodoFields(req.body);
+  if (result.error) return error(res, 400, result.error);
+
+  if (Object.keys(result.values).length === 0) {
     return error(res, 400, 'at least one of title or completed is required');
   }
 
-  try {
-    const todo = await Todo.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    });
-    if (!todo) return error(res, 404, 'not found');
-    return res.json(todo);
-  } catch (_err) {
-    return error(res, 400, 'invalid todo');
-  }
+  const todo = todoStore.patchTodo(id, result.values);
+  if (!todo) return error(res, 404, 'not found');
+
+  return res.json(todo);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   const { id } = req.params;
   if (!validateId(res, id)) return undefined;
 
-  const deleted = await Todo.findByIdAndDelete(id);
-  if (!deleted) return error(res, 404, 'not found');
+  if (!todoStore.deleteTodo(id)) return error(res, 404, 'not found');
+
   return res.status(204).send();
 });
 
