@@ -87,9 +87,13 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   if (!validateId(res, id)) return undefined;
 
-  const deleted = await Todo.findByIdAndDelete(id);
-  if (!deleted) return error(res, 404, 'not found');
-  return res.status(204).send();
+  try {
+    const deleted = await Todo.findByIdAndDelete(id);
+    if (!deleted) return error(res, 404, 'not found');
+    return res.status(204).send();
+  } catch (_err) {
+    return error(res, 500, 'internal error');
+  }
 });
 
 module.exports = router;
