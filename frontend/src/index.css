@@ -64,3 +64,23 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
   .todo-actions { justify-content: stretch; }
   .todo-actions button, .todo-create-row button { width: 100%; }
 }
+
+/* Customer forms */
+.customer-form-page { display: grid; gap: 1.25rem; }
+.customer-form-hero { background: linear-gradient(135deg, #0f766e, #2563eb); color: #fff; border-radius: 24px; padding: clamp(1.25rem, 4vw, 2.5rem); box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18); }
+.customer-form-hero h1 { margin: 0.25rem 0 0.5rem; font-size: clamp(2.25rem, 7vw, 4rem); line-height: 1; }
+.customer-form-hero p { max-width: 42rem; margin-bottom: 0; color: #ccfbf1; }
+.customer-form, .customer-status, .customer-alert { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+.customer-form { display: grid; gap: 1rem; padding: 1rem; }
+.customer-field { display: grid; gap: 0.4rem; }
+.customer-field label { font-weight: 800; }
+.customer-field input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
+.customer-field input[aria-invalid="true"] { border-color: #dc2626; }
+.customer-field-error { margin: 0; color: #b91c1c; font-weight: 700; }
+.customer-alert { padding: 0.9rem 1rem; border-color: #fecaca; background: #fef2f2; color: #991b1b; font-weight: 700; }
+.customer-status { padding: 1.25rem; color: #475569; text-align: center; }
+.customer-form-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+@media (max-width: 700px) {
+  .customer-form-actions button { width: 100%; }
+}
