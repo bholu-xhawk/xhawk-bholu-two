@@ -1,8 +1,30 @@
 import React, { useEffect, useState } from 'react'
 import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
+const TODO_FILTERS = [
+  {
+    id: 'all',
+    label: 'All',
+    matches: () => true,
+    emptyMessage: '',
+  },
+  {
+    id: 'active',
+    label: 'Active',
+    matches: (todo) => !todo.completed,
+    emptyMessage: 'No active todos. Completed tasks are waiting in Done.',
+  },
+  {
+    id: 'done',
+    label: 'Done',
+    matches: (todo) => todo.completed,
+    emptyMessage: 'No done todos yet. Finish a task to see it here.',
+  },
+]
+
 export default function Todos() {
   const [todos, setTodos] = useState([])
+  const [selectedFilter, setSelectedFilter] = useState('all')
   const [newTitle, setNewTitle] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -122,6 +144,8 @@ export default function Todos() {
   }
 
   const createPending = pendingAction === 'create'
+  const activeFilter = TODO_FILTERS.find((filter) => filter.id === selectedFilter) || TODO_FILTERS[0]
+  const visibleTodos = todos.filter(activeFilter.matches)
 
   return (
     <main className="todo-page" aria-labelledby="todo-title">
@@ -159,68 +183,88 @@ export default function Todos() {
       ) : todos.length === 0 ? (
         <p className="todo-empty">No todos yet. Add your first task above.</p>
       ) : (
-        <ul className="todo-list" aria-label="Todo list">
-          {todos.map((todo) => {
-            const isEditing = editingId === todo._id
-            const editPending = pendingAction === `edit:${todo._id}`
-            const togglePending = pendingAction === `toggle:${todo._id}`
-            const deletePending = pendingAction === `delete:${todo._id}`
+        <>
+          <div className="todo-filter-group" role="group" aria-label="Filter todos by status">
+            {TODO_FILTERS.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                className={`todo-filter-button${selectedFilter === filter.id ? ' selected' : ''}`}
+                aria-pressed={selectedFilter === filter.id}
+                onClick={() => setSelectedFilter(filter.id)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
 
-            return (
-              <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
-                <label className="todo-check">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() => handleToggle(todo)}
-                    disabled={togglePending || deletePending || editPending}
-                  />
-                  <span>{todo.completed ? 'Completed' : 'Incomplete'}</span>
-                </label>
+          {visibleTodos.length === 0 ? (
+            <p className="todo-empty">{activeFilter.emptyMessage}</p>
+          ) : (
+            <ul className="todo-list" aria-label="Todo list">
+              {visibleTodos.map((todo) => {
+                const isEditing = editingId === todo._id
+                const editPending = pendingAction === `edit:${todo._id}`
+                const togglePending = pendingAction === `toggle:${todo._id}`
+                const deletePending = pendingAction === `delete:${todo._id}`
 
-                <div className="todo-content">
-                  {isEditing ? (
-                    <label className="sr-only" htmlFor={`edit-${todo._id}`}>
-                      Edit {todo.title}
+                return (
+                  <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
+                    <label className="todo-check">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        onChange={() => handleToggle(todo)}
+                        disabled={togglePending || deletePending || editPending}
+                      />
+                      <span>{todo.completed ? 'Completed' : 'Incomplete'}</span>
                     </label>
-                  ) : null}
-                  {isEditing ? (
-                    <input
-                      id={`edit-${todo._id}`}
-                      className="todo-edit-input"
-                      type="text"
-                      value={editingTitle}
-                      onChange={(event) => setEditingTitle(event.target.value)}
-                      disabled={editPending}
-                    />
-                  ) : (
-                    <span className="todo-title">{todo.title}</span>
-                  )}
-                </div>
 
-                <div className="todo-actions">
-                  {isEditing ? (
-                    <>
-                      <button type="button" onClick={() => handleSave(todo)} disabled={editPending}>
-                        {editPending ? 'Saving…' : 'Save'}
+                    <div className="todo-content">
+                      {isEditing ? (
+                        <label className="sr-only" htmlFor={`edit-${todo._id}`}>
+                          Edit {todo.title}
+                        </label>
+                      ) : null}
+                      {isEditing ? (
+                        <input
+                          id={`edit-${todo._id}`}
+                          className="todo-edit-input"
+                          type="text"
+                          value={editingTitle}
+                          onChange={(event) => setEditingTitle(event.target.value)}
+                          disabled={editPending}
+                        />
+                      ) : (
+                        <span className="todo-title">{todo.title}</span>
+                      )}
+                    </div>
+
+                    <div className="todo-actions">
+                      {isEditing ? (
+                        <>
+                          <button type="button" onClick={() => handleSave(todo)} disabled={editPending}>
+                            {editPending ? 'Saving…' : 'Save'}
+                          </button>
+                          <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending}>
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button type="button" className="secondary" onClick={() => beginEdit(todo)} disabled={Boolean(pendingAction)}>
+                          Edit
+                        </button>
+                      )}
+                      <button type="button" className="danger" onClick={() => handleDelete(todo)} disabled={deletePending || editPending}>
+                        {deletePending ? 'Deleting…' : 'Delete'}
                       </button>
-                      <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending}>
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" className="secondary" onClick={() => beginEdit(todo)} disabled={Boolean(pendingAction)}>
-                      Edit
-                    </button>
-                  )}
-                  <button type="button" className="danger" onClick={() => handleDelete(todo)} disabled={deletePending || editPending}>
-                    {deletePending ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </>
       )}
     </main>
   )

@@ -46,6 +46,71 @@ describe('Todos page', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('API is down')
   })
 
+  it('selects All by default and exposes the filter state accessibly', async () => {
+    listTodos.mockResolvedValueOnce(initialTodos)
+
+    renderTodos()
+    await screen.findByText('Write tests')
+
+    const filterGroup = screen.getByRole('group', { name: /filter todos by status/i })
+    expect(within(filterGroup).getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(filterGroup).getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'false')
+    expect(within(filterGroup).getByRole('button', { name: 'Done' })).toHaveAttribute('aria-pressed', 'false')
+    expect(within(screen.getByRole('list', { name: /todo list/i })).getByText('Write tests')).toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: /todo list/i })).getByText('Ship feature')).toBeInTheDocument()
+  })
+
+  it('filters active and done todos without reloading from the API', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce(initialTodos)
+
+    renderTodos()
+    await screen.findByText('Write tests')
+
+    await user.click(screen.getByRole('button', { name: 'Active' }))
+    expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.queryByText('Ship feature')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.getByRole('button', { name: 'Done' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText('Write tests')).not.toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+    expect(listTodos).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows contextual empty states when a selected filter has no matches', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce([{ _id: 'todo-1', title: 'Write tests', completed: false }])
+
+    renderTodos()
+    await screen.findByText('Write tests')
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+
+    expect(screen.getByText(/no done todos yet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/no todos yet/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: /todo list/i })).not.toBeInTheDocument()
+  })
+
+  it('updates the active filtered view after a completion toggle succeeds', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce(initialTodos)
+    updateTodo.mockResolvedValueOnce({ ...initialTodos[0], completed: true })
+
+    renderTodos()
+    await screen.findByText('Write tests')
+    await user.click(screen.getByRole('button', { name: 'Active' }))
+    await user.click(screen.getByRole('checkbox', { name: /incomplete/i }))
+
+    expect(updateTodo).toHaveBeenCalledWith('todo-1', { completed: true })
+    await waitFor(() => expect(screen.queryByText('Write tests')).not.toBeInTheDocument())
+    expect(screen.getByText(/no active todos/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+  })
+
   it('creates a todo after the API succeeds', async () => {
     const user = userEvent.setup()
     listTodos.mockResolvedValueOnce([])
