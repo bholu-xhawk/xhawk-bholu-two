@@ -12,6 +12,7 @@ import Skills from './pages/Skills'
 import Experience from './pages/Experience'
 import Blog from './pages/Blog'
 import Resume from './pages/Resume'
+import CustomerFormPage from './pages/CustomerFormPage'
 
 function App() {
   const location = useLocation()
@@ -32,6 +33,8 @@ function App() {
             <Route path="/experience" element={<Experience />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/resume" element={<Resume />} />
+            <Route path="/customers/new" element={<CustomerFormPage />} />
+            <Route path="/customers/:id/edit" element={<CustomerFormPage />} />
           </Routes>
         </AnimatePresence>
       </div>
