@@ -75,6 +75,70 @@ describe('Todos page', () => {
     expect(screen.queryByText('Broken todo')).not.toBeInTheDocument()
   })
 
+  it('shows all todos by default and exposes the selected filter state', async () => {
+    listTodos.mockResolvedValueOnce(initialTodos)
+
+    renderTodos()
+
+    expect(await screen.findByText('Write tests')).toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Done' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('filters todos by active and done status', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce(initialTodos)
+
+    renderTodos()
+    await screen.findByText('Write tests')
+
+    await user.click(screen.getByRole('button', { name: 'Active' }))
+    expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.queryByText('Ship feature')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.getByRole('button', { name: 'Done' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText('Write tests')).not.toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'All' }))
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+  })
+
+  it('shows a filter-specific empty state when todos exist but none match', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce([{ _id: 'todo-2', title: 'Ship feature', completed: true }])
+
+    renderTodos()
+    await screen.findByText('Ship feature')
+    await user.click(screen.getByRole('button', { name: 'Active' }))
+
+    expect(screen.getByText(/no active todos match this filter/i)).toBeInTheDocument()
+    expect(screen.queryByText(/no todos yet/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: /todo list/i })).not.toBeInTheDocument()
+  })
+
+  it('updates filtered membership after a toggle succeeds through the API', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce(initialTodos)
+    updateTodo.mockResolvedValueOnce({ ...initialTodos[0], completed: true })
+
+    renderTodos()
+    await screen.findByText('Write tests')
+    await user.click(screen.getByRole('button', { name: 'Active' }))
+    await user.click(screen.getByRole('checkbox', { name: /incomplete/i }))
+
+    expect(updateTodo).toHaveBeenCalledWith('todo-1', { completed: true })
+    await waitFor(() => expect(screen.queryByText('Write tests')).not.toBeInTheDocument())
+    expect(screen.getByText(/no active todos match this filter/i)).toBeInTheDocument()
+    expect(screen.queryByText('Ship feature')).not.toBeInTheDocument()
+  })
+
   it('edits and cancels editing without changing state', async () => {
     const user = userEvent.setup()
     listTodos.mockResolvedValueOnce(initialTodos)
