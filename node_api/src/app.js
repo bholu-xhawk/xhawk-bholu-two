@@ -10,8 +10,10 @@ app.get("/", (req, res) => {
 
 const usersRouter = require('./routes/users');
 const todosRouter = require('./routes/todos');
+const customersRouter = require('./routes/customers');
 
 app.use('/users', usersRouter);
 app.use('/api/todos', todosRouter);
+app.use('/api/customers', customersRouter);
 
 module.exports = app;
