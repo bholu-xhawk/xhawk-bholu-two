@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Todos from './pages/Todos'
+import Customers from './pages/Customers'
 import About from './pages/About'
 import Projects from './pages/Projects'
 import Contact from './pages/Contact'
@@ -24,6 +25,7 @@ function App() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Todos />} />
             <Route path="/portfolio" element={<Home />} />
+            <Route path="/customers" element={<Customers />} />
             <Route path="/about" element={<About />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/contact" element={<Contact />} />

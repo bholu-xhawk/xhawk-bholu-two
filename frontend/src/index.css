@@ -64,3 +64,32 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
   .todo-actions { justify-content: stretch; }
   .todo-actions button, .todo-create-row button { width: 100%; }
 }
+
+/* Customer directory */
+.customers-page { display: grid; gap: 1.25rem; }
+.customers-hero { background: linear-gradient(135deg, #312e81, #0f766e); color: #fff; border-radius: 24px; padding: clamp(1.25rem, 4vw, 2.5rem); box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18); }
+.customers-hero h1 { margin: 0.25rem 0 0.5rem; font-size: clamp(2.5rem, 8vw, 4.5rem); line-height: 1; }
+.customers-hero p { max-width: 42rem; margin-bottom: 0; color: #ccfbf1; }
+.customers-toolbar, .customers-error, .customers-empty, .customers-status, .customers-table-wrap, .customers-pagination { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+.customers-toolbar { display: grid; gap: 0.5rem; padding: 1rem; }
+.customers-toolbar label { font-weight: 800; }
+.customers-toolbar input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
+.customers-error { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1rem; border-color: #fecaca; background: #fef2f2; color: #991b1b; font-weight: 700; }
+.customers-error p { margin: 0; }
+.customers-status, .customers-empty { padding: 1.25rem; color: #475569; text-align: center; }
+.customers-table-wrap { overflow-x: auto; }
+.customers-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+.customers-table caption { padding: 1rem; text-align: left; color: #475569; font-weight: 700; }
+.customers-table th, .customers-table td { padding: 0.85rem 1rem; border-top: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+.customers-table th { background: #f8fafc; color: #334155; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.customers-table tbody tr:hover { background: #f8fafc; }
+.sort-button { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0; border-radius: 0; background: transparent; color: inherit; font-weight: 800; text-align: left; }
+.sort-button:hover:not(:disabled) { background: transparent; color: #1d4ed8; transform: none; }
+.status-pill { display: inline-flex; align-items: center; border-radius: 999px; background: #dbeafe; color: #1e3a8a; padding: 0.2rem 0.55rem; font-weight: 800; text-transform: capitalize; }
+.customers-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding: 1rem; }
+.customers-pagination span { color: #475569; font-weight: 700; }
+
+@media (max-width: 700px) {
+  .customers-error, .customers-pagination { align-items: stretch; flex-direction: column; }
+  .customers-pagination button { width: 100%; }
+}
