@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
+const TODO_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'done', label: 'Done' },
+]
+
+function filterTodos(todos, selectedFilter) {
+  if (selectedFilter === 'active') return todos.filter((todo) => !todo.completed)
+  if (selectedFilter === 'done') return todos.filter((todo) => todo.completed)
+  return todos
+}
+
 export default function Todos() {
   const [todos, setTodos] = useState([])
   const [newTitle, setNewTitle] = useState('')
@@ -9,6 +21,7 @@ export default function Todos() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
+  const [selectedFilter, setSelectedFilter] = useState('all')
 
   useEffect(() => {
     let ignore = false
@@ -122,6 +135,9 @@ export default function Todos() {
   }
 
   const createPending = pendingAction === 'create'
+  const visibleTodos = filterTodos(todos, selectedFilter)
+  const selectedFilterLabel =
+    TODO_FILTERS.find((filter) => filter.value === selectedFilter)?.label.toLowerCase() || 'selected'
 
   return (
     <main className="todo-page" aria-labelledby="todo-title">
@@ -159,68 +175,102 @@ export default function Todos() {
       ) : todos.length === 0 ? (
         <p className="todo-empty">No todos yet. Add your first task above.</p>
       ) : (
-        <ul className="todo-list" aria-label="Todo list">
-          {todos.map((todo) => {
-            const isEditing = editingId === todo._id
-            const editPending = pendingAction === `edit:${todo._id}`
-            const togglePending = pendingAction === `toggle:${todo._id}`
-            const deletePending = pendingAction === `delete:${todo._id}`
+        <>
+          <div className="todo-filters" role="group" aria-label="Filter todos">
+            {TODO_FILTERS.map((filter) => {
+              const isSelected = selectedFilter === filter.value
 
-            return (
-              <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
-                <label className="todo-check">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() => handleToggle(todo)}
-                    disabled={togglePending || deletePending || editPending}
-                  />
-                  <span>{todo.completed ? 'Completed' : 'Incomplete'}</span>
-                </label>
+              return (
+                <button
+                  key={filter.value}
+                  type="button"
+                  className={`todo-filter-button${isSelected ? ' selected' : ''}`}
+                  aria-pressed={isSelected}
+                  onClick={() => setSelectedFilter(filter.value)}
+                >
+                  {filter.label}
+                </button>
+              )
+            })}
+          </div>
 
-                <div className="todo-content">
-                  {isEditing ? (
-                    <label className="sr-only" htmlFor={`edit-${todo._id}`}>
-                      Edit {todo.title}
+          {visibleTodos.length === 0 ? (
+            <p className="todo-empty">No {selectedFilterLabel} todos to show.</p>
+          ) : (
+            <ul className="todo-list" aria-label="Todo list">
+              {visibleTodos.map((todo) => {
+                const isEditing = editingId === todo._id
+                const editPending = pendingAction === `edit:${todo._id}`
+                const togglePending = pendingAction === `toggle:${todo._id}`
+                const deletePending = pendingAction === `delete:${todo._id}`
+
+                return (
+                  <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
+                    <label className="todo-check">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        onChange={() => handleToggle(todo)}
+                        disabled={togglePending || deletePending || editPending}
+                      />
+                      <span>{todo.completed ? 'Completed' : 'Incomplete'}</span>
                     </label>
-                  ) : null}
-                  {isEditing ? (
-                    <input
-                      id={`edit-${todo._id}`}
-                      className="todo-edit-input"
-                      type="text"
-                      value={editingTitle}
-                      onChange={(event) => setEditingTitle(event.target.value)}
-                      disabled={editPending}
-                    />
-                  ) : (
-                    <span className="todo-title">{todo.title}</span>
-                  )}
-                </div>
 
-                <div className="todo-actions">
-                  {isEditing ? (
-                    <>
-                      <button type="button" onClick={() => handleSave(todo)} disabled={editPending}>
-                        {editPending ? 'Saving…' : 'Save'}
+                    <div className="todo-content">
+                      {isEditing ? (
+                        <label className="sr-only" htmlFor={`edit-${todo._id}`}>
+                          Edit {todo.title}
+                        </label>
+                      ) : null}
+                      {isEditing ? (
+                        <input
+                          id={`edit-${todo._id}`}
+                          className="todo-edit-input"
+                          type="text"
+                          value={editingTitle}
+                          onChange={(event) => setEditingTitle(event.target.value)}
+                          disabled={editPending}
+                        />
+                      ) : (
+                        <span className="todo-title">{todo.title}</span>
+                      )}
+                    </div>
+
+                    <div className="todo-actions">
+                      {isEditing ? (
+                        <>
+                          <button type="button" onClick={() => handleSave(todo)} disabled={editPending}>
+                            {editPending ? 'Saving…' : 'Save'}
+                          </button>
+                          <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending}>
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => beginEdit(todo)}
+                          disabled={Boolean(pendingAction)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => handleDelete(todo)}
+                        disabled={deletePending || editPending}
+                      >
+                        {deletePending ? 'Deleting…' : 'Delete'}
                       </button>
-                      <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending}>
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" className="secondary" onClick={() => beginEdit(todo)} disabled={Boolean(pendingAction)}>
-                      Edit
-                    </button>
-                  )}
-                  <button type="button" className="danger" onClick={() => handleDelete(todo)} disabled={deletePending || editPending}>
-                    {deletePending ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </>
       )}
     </main>
   )
