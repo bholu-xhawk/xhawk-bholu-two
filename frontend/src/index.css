@@ -40,12 +40,19 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
 .todo-hero p { max-width: 42rem; margin-bottom: 0; color: #dbeafe; }
 .eyebrow { margin: 0; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; font-weight: 800; color: #bfdbfe; }
 
-.todo-create-form, .todo-item, .todo-empty, .todo-status, .todo-error { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+.todo-create-form, .todo-filter-panel, .todo-item, .todo-empty, .todo-status, .todo-error { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
 .todo-create-form { display: grid; gap: 0.5rem; padding: 1rem; }
 .todo-create-form label { font-weight: 800; }
 .todo-create-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
 .todo-create-row input, .todo-edit-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
 .todo-error { padding: 0.9rem 1rem; border-color: #fecaca; background: #fef2f2; color: #991b1b; font-weight: 700; }
+.todo-filter-panel { padding: 0.75rem; }
+.todo-filter-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.todo-filter-button { flex: 1 1 8rem; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; }
+.todo-filter-button:hover { border-color: #93c5fd; }
+.todo-filter-button[aria-pressed="true"] { border-color: #1d4ed8; background: #1d4ed8; color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28); }
+.todo-filter-button[aria-pressed="true"]:hover { background: #1e40af; }
+.todo-filter-button:focus-visible { outline-color: #2563eb; }
 .todo-status, .todo-empty { padding: 1.25rem; color: #475569; text-align: center; }
 .todo-list { list-style: none; display: grid; gap: 0.85rem; padding: 0; margin: 0; }
 .todo-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; padding: 1rem; }
@@ -62,5 +69,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
   .nav-links { flex-wrap: wrap; }
   .todo-create-row, .todo-item { grid-template-columns: 1fr; align-items: stretch; }
   .todo-actions { justify-content: stretch; }
-  .todo-actions button, .todo-create-row button { width: 100%; }
+  .todo-filter-panel { padding: 0.65rem; }
+  .todo-filter-group { flex-direction: column; }
+  .todo-filter-button, .todo-actions button, .todo-create-row button { width: 100%; }
 }
+

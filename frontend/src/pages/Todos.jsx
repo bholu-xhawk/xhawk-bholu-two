@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
+const TODO_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'done', label: 'Done' },
+]
+
+function todoMatchesFilter(todo, filter) {
+  if (filter === 'active') return !todo.completed
+  if (filter === 'done') return todo.completed
+  return true
+}
+
 export default function Todos() {
   const [todos, setTodos] = useState([])
   const [newTitle, setNewTitle] = useState('')
@@ -9,6 +21,7 @@ export default function Todos() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     let ignore = false
@@ -122,6 +135,8 @@ export default function Todos() {
   }
 
   const createPending = pendingAction === 'create'
+  const visibleTodos = todos.filter((todo) => todoMatchesFilter(todo, filter))
+  const selectedFilter = TODO_FILTERS.find((todoFilter) => todoFilter.value === filter) || TODO_FILTERS[0]
 
   return (
     <main className="todo-page" aria-labelledby="todo-title">
@@ -154,13 +169,34 @@ export default function Todos() {
         </div>
       )}
 
+      <section className="todo-filter-panel" aria-labelledby="todo-filter-title">
+        <h2 id="todo-filter-title" className="sr-only">
+          Filter todos
+        </h2>
+        <div className="todo-filter-group" role="group" aria-label="Filter todos">
+          {TODO_FILTERS.map((todoFilter) => (
+            <button
+              key={todoFilter.value}
+              type="button"
+              className="todo-filter-button"
+              aria-pressed={filter === todoFilter.value}
+              onClick={() => setFilter(todoFilter.value)}
+            >
+              {todoFilter.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {loading ? (
         <p className="todo-status">Loading todos…</p>
       ) : todos.length === 0 ? (
         <p className="todo-empty">No todos yet. Add your first task above.</p>
+      ) : visibleTodos.length === 0 ? (
+        <p className="todo-empty">No {selectedFilter.label.toLowerCase()} todos match this filter.</p>
       ) : (
         <ul className="todo-list" aria-label="Todo list">
-          {todos.map((todo) => {
+          {visibleTodos.map((todo) => {
             const isEditing = editingId === todo._id
             const editPending = pendingAction === `edit:${todo._id}`
             const togglePending = pendingAction === `toggle:${todo._id}`
