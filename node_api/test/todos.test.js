@@ -29,10 +29,11 @@ describe('Todos API', () => {
   it('creates, lists newest first, edits, toggles, and deletes todos', async () => {
     const first = await request(app)
       .post('/api/todos')
-      .send({ title: '  First todo  ' })
+      .send({ title: '  First todo  ', dueDate: '2026-02-14' })
       .expect(201);
 
     expect(first.body).toMatchObject({ title: 'First todo', completed: false });
+    expect(first.body.dueDate).toBe('2026-02-14T00:00:00.000Z');
     expect(first.body).toHaveProperty('_id');
     expect(first.body).toHaveProperty('createdAt');
     expect(first.body).toHaveProperty('updatedAt');
@@ -44,19 +45,27 @@ describe('Todos API', () => {
 
     const list = await request(app).get('/api/todos').expect(200);
     expect(list.body.map((todo) => todo._id)).toEqual([second.body._id, first.body._id]);
+    expect(list.body[1].dueDate).toBe('2026-02-14T00:00:00.000Z');
 
     const renamed = await request(app)
       .patch(`/api/todos/${first.body._id}`)
-      .send({ title: ' Renamed todo ' })
+      .send({ title: ' Renamed todo ', dueDate: '2026-03-01' })
       .expect(200);
     expect(renamed.body.title).toBe('Renamed todo');
     expect(renamed.body.completed).toBe(false);
+    expect(renamed.body.dueDate).toBe('2026-03-01T00:00:00.000Z');
 
     const completed = await request(app)
       .patch(`/api/todos/${first.body._id}`)
       .send({ completed: true })
       .expect(200);
     expect(completed.body.completed).toBe(true);
+
+    const cleared = await request(app)
+      .patch(`/api/todos/${first.body._id}`)
+      .send({ dueDate: null })
+      .expect(200);
+    expect(cleared.body.dueDate).toBeNull();
 
     await request(app).delete(`/api/todos/${first.body._id}`).expect(204);
 
@@ -105,7 +114,34 @@ describe('Todos API', () => {
     await request(app)
       .patch(`/api/todos/${created.body._id}`)
       .send({ ignored: 'field' })
-      .expect(400, { error: 'at least one of title or completed is required' });
+      .expect(400, { error: 'at least one of title, completed, or dueDate is required' });
+  });
+
+  it('rejects invalid due dates', async () => {
+    const created = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Valid todo' })
+      .expect(201);
+
+    const invalidDueDateCases = [
+      [{ title: 'Wrong type', dueDate: false }, 'dueDate must be a YYYY-MM-DD string or null'],
+      [{ title: 'Malformed', dueDate: '2026/02/14' }, 'dueDate must be a valid YYYY-MM-DD date'],
+      [{ title: 'Impossible', dueDate: '2026-02-30' }, 'dueDate must be a valid YYYY-MM-DD date'],
+    ];
+
+    for (const [body, message] of invalidDueDateCases) {
+      await request(app).post('/api/todos').send(body).expect(400, { error: message });
+    }
+
+    await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: 20260214 })
+      .expect(400, { error: 'dueDate must be a YYYY-MM-DD string or null' });
+
+    await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: '2026-13-01' })
+      .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date' });
   });
 
   it('returns consistent errors for invalid ids and missing records', async () => {
