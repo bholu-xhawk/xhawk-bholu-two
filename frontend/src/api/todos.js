@@ -34,10 +34,10 @@ export function listTodos() {
   return request()
 }
 
-export function createTodo(title) {
+export function createTodo(title, dueDate) {
   return request('', {
     method: 'POST',
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ title, dueDate }),
   })
 }
 

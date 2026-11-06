@@ -17,6 +17,7 @@ Todos are shared and unauthenticated because this repository does not include an
 
 - `title` — required string, trimmed, and rejected when blank.
 - `completed` — boolean, defaults to `false`.
+- `dueDate` — optional deadline stored as a Mongo/Mongoose `Date`. API writes accept only date-only `YYYY-MM-DD` strings and normalize them to UTC midnight; older records may omit the field, and updates may set it to `null` to clear the deadline.
 - `createdAt` and `updatedAt` — automatic Mongoose timestamps.
 
 ## Todo API contract
@@ -24,11 +25,18 @@ Todos are shared and unauthenticated because this repository does not include an
 All errors return JSON in the shape `{ "error": "message" }`.
 
 - `GET /api/todos` — list todos newest first.
-- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
-- `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
+- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false, "dueDate": "2026-11-06" }`; `completed` and `dueDate` are optional.
+- `PATCH /api/todos/:id` — update any mutable field with `{ "title": "New task" }`, `{ "completed": true }`, `{ "dueDate": "2026-12-25" }`, or a combined payload.
+- `PATCH /api/todos/:id` with `{ "dueDate": null }` — explicitly clear a deadline.
 - `DELETE /api/todos/:id` — delete a todo and return `204`.
 
-Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
+Valid due dates round-trip in JSON as normalized ISO timestamps such as `"2026-11-06T00:00:00.000Z"`. Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, malformed or impossible due dates return `400`, and valid IDs that do not match a record return `404`.
+
+## Deadline behavior in the frontend
+
+The todo screen includes date inputs for creating and editing deadlines. An incomplete todo is overdue only when its normalized `YYYY-MM-DD` due day is before the browser's current calendar day; due-today, future, completed, undated, and legacy records are not overdue.
+
+Overdue todos receive contrast-safe red row treatment and a visible `Overdue` badge so the status does not rely on color alone. The `Show overdue only` checkbox filters the already-loaded collection on the client using the same overdue predicate as row styling; when the filter has no matches, the page shows a dedicated no-overdue message instead of the empty-list message.
 
 ## Local setup
 
