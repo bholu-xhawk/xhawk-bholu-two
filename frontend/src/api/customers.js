@@ -1,5 +1,24 @@
 const CUSTOMERS_URL = '/api/customers'
 
+function isValidPositiveInteger(value) {
+  return Number.isSafeInteger(value) && value > 0
+}
+
+function isValidNonNegativeInteger(value) {
+  return Number.isSafeInteger(value) && value >= 0
+}
+
+function isValidCustomerEnvelope(payload) {
+  return Boolean(
+    payload &&
+    Array.isArray(payload.items) &&
+    isValidPositiveInteger(payload.page) &&
+    isValidPositiveInteger(payload.pageSize) &&
+    isValidNonNegativeInteger(payload.total) &&
+    isValidNonNegativeInteger(payload.totalPages)
+  )
+}
+
 async function parseResponse(response) {
   let payload = null
   try {
@@ -11,6 +30,10 @@ async function parseResponse(response) {
   if (!response.ok) {
     const message = payload?.error || 'Request failed'
     throw new Error(message)
+  }
+
+  if (!isValidCustomerEnvelope(payload)) {
+    throw new Error('Invalid customers response')
   }
 
   return payload

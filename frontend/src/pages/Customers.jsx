@@ -58,6 +58,11 @@ export default function Customers() {
       try {
         const response = await listCustomers({ search: debouncedSearch, sort, direction, page, signal: controller.signal })
         if (requestIdRef.current === requestId) {
+          const lastPage = Math.max(response.totalPages, 1)
+          if (response.items.length === 0 && page > lastPage) {
+            setPage(lastPage)
+            return
+          }
           setResult(response)
         }
       } catch (err) {

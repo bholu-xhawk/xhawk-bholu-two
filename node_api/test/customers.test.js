@@ -73,16 +73,16 @@ describe('Customers API', () => {
     ]);
   });
 
-  it('searches names and emails case-insensitively and reports filtered totals', async () => {
+  it('searches name and email prefixes case-insensitively and reports filtered totals', async () => {
     await seed([
       customer(1, { name: 'Acme Primary', email: 'primary@example.com' }),
-      customer(2, { name: 'Other Customer', email: 'contact@acme.test' }),
-      customer(3, { name: 'Unmatched', email: 'none@example.com' }),
+      customer(2, { name: 'Other Customer', email: 'acme-contact@example.com' }),
+      customer(3, { name: 'Customer Acme', email: 'contact@acme.test' }),
     ]);
 
     const result = await request(app).get('/api/customers?search= ACME ').expect(200);
     expectEnvelope(result.body, { total: 2, totalPages: 1 });
-    expect(result.body.items.map((item) => item.email).sort()).toEqual(['contact@acme.test', 'primary@example.com']);
+    expect(result.body.items.map((item) => item.email).sort()).toEqual(['acme-contact@example.com', 'primary@example.com']);
   });
 
   it('treats regex metacharacters in search as literal text', async () => {
@@ -162,10 +162,20 @@ describe('Customers API', () => {
   it('rejects malformed page, sort, and direction query values', async () => {
     await request(app).get('/api/customers?page=0').expect(400, { error: 'page must be a positive integer' });
     await request(app).get('/api/customers?page=1.5').expect(400, { error: 'page must be a positive integer' });
+    await request(app).get('/api/customers?page=500001').expect(400, { error: 'page must be no greater than 500' });
     await request(app).get('/api/customers?sort=password').expect(400, {
       error: 'sort must be one of name, email, company, status, signedUpAt',
     });
     await request(app).get('/api/customers?direction=sideways').expect(400, { error: 'direction must be asc or desc' });
+  });
+
+  it('rejects repeated query parameters', async () => {
+    await request(app).get('/api/customers?page=2&page=3').expect(400, { error: 'page must not be repeated' });
+    await request(app).get('/api/customers?sort=name&sort=email').expect(400, { error: 'sort must not be repeated' });
+    await request(app)
+      .get('/api/customers?direction=asc&direction=desc')
+      .expect(400, { error: 'direction must not be repeated' });
+    await request(app).get('/api/customers?search=ada&search=grace').expect(400, { error: 'search must not be repeated' });
   });
 
   it('returns the repository error shape when the database query fails', async () => {

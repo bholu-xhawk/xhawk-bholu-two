@@ -2,17 +2,26 @@ const router = require('express').Router();
 const Customer = require('../models/Customer');
 
 const PAGE_SIZE = 20;
+const MAX_PAGE = 500;
 const DEFAULT_SORT = 'signedUpAt';
 const DEFAULT_DIRECTION = 'desc';
 const SORT_FIELDS = new Set(['name', 'email', 'company', 'status', 'signedUpAt']);
+const REPEATED_QUERY_VALUE = Symbol('repeated query value');
 
 function error(res, status, message) {
   return res.status(status).json({ error: message });
 }
 
 function getSingleQueryValue(value) {
-  if (Array.isArray(value)) return undefined;
+  if (Array.isArray(value)) return REPEATED_QUERY_VALUE;
   return value;
+}
+
+function rejectRepeatedQueryValue(query, field) {
+  if (getSingleQueryValue(query[field]) === REPEATED_QUERY_VALUE) {
+    return { error: `${field} must not be repeated` };
+  }
+  return null;
 }
 
 function positiveIntegerFromQuery(value) {
@@ -41,9 +50,17 @@ function escapeRegExp(value) {
 }
 
 function validateCustomerQuery(query) {
+  for (const field of ['page', 'sort', 'direction', 'search']) {
+    const repeatedError = rejectRepeatedQueryValue(query, field);
+    if (repeatedError) return repeatedError;
+  }
+
   const page = positiveIntegerFromQuery(query.page);
   if (page === null || !Number.isSafeInteger(page)) {
     return { error: 'page must be a positive integer' };
+  }
+  if (page > MAX_PAGE) {
+    return { error: `page must be no greater than ${MAX_PAGE}` };
   }
 
   const sort = enumFromQuery(query.sort, SORT_FIELDS, DEFAULT_SORT);
@@ -66,10 +83,10 @@ function validateCustomerQuery(query) {
 
 function buildFilter(search) {
   if (!search) return {};
-  const escapedSearch = escapeRegExp(search);
-  const regex = new RegExp(escapedSearch, 'i');
+  const escapedSearch = escapeRegExp(search.toLowerCase());
+  const regex = new RegExp(`^${escapedSearch}`);
   return {
-    $or: [{ name: regex }, { email: regex }],
+    $or: [{ nameSearch: regex }, { emailSearch: regex }],
   };
 }
 

@@ -156,6 +156,23 @@ describe('Customers page', () => {
     expect(listCustomers).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1 }))
   })
 
+  it('returns to the last valid page when the requested page becomes empty', async () => {
+    const user = userEvent.setup()
+    listCustomers
+      .mockResolvedValueOnce(firstPage)
+      .mockResolvedValueOnce(emptyResult({ page: 2, total: 2, totalPages: 1 }))
+      .mockResolvedValueOnce({ ...firstPage, total: 2, totalPages: 1 })
+
+    renderCustomers()
+    await screen.findByText('Ada Lovelace')
+    await user.click(screen.getByRole('button', { name: /next/i }))
+
+    await waitFor(() => expect(listCustomers).toHaveBeenCalledTimes(3))
+    expect(listCustomers).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1 }))
+    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
+    expect(screen.getByText(/page 1 of 1/i)).toBeInTheDocument()
+  })
+
   it('ignores stale responses from superseded requests', async () => {
     const user = userEvent.setup()
     let resolveFirst
