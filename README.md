@@ -17,18 +17,21 @@ Todos are shared and unauthenticated because this repository does not include an
 
 - `title` — required string, trimmed, and rejected when blank.
 - `completed` — boolean, defaults to `false`.
+- `dueDate` — optional nullable date-only string in canonical `YYYY-MM-DD` form. New todos default to `null`; older records without the field are treated the same as `null`.
 - `createdAt` and `updatedAt` — automatic Mongoose timestamps.
 
 ## Todo API contract
 
 All errors return JSON in the shape `{ "error": "message" }`.
 
-- `GET /api/todos` — list todos newest first.
-- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
-- `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
+- `GET /api/todos` — list todos newest first by `createdAt` and `_id`. The endpoint does not accept sort parameters.
+- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false, "dueDate": "2026-12-31" }`; `completed` and `dueDate` are optional. Omitted `dueDate` and explicit `null` both create an undated todo.
+- `PATCH /api/todos/:id` — update any mutable field with `{ "title": "New task" }`, `{ "completed": true }`, `{ "dueDate": "2026-12-31" }`, or a combination. Send `{ "dueDate": null }` to explicitly clear a saved due date.
 - `DELETE /api/todos/:id` — delete a todo and return `204`.
 
-Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
+Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`. Due dates must be `null` or real calendar dates formatted exactly as `YYYY-MM-DD`; malformed strings such as `2026-1-01` and impossible dates such as `2026-02-30` return `400`.
+
+The frontend keeps the fetched API array as canonical component state. The “Newest first” selector option displays that source order, while “Due date” derives a local earliest-first view from a copy of the array. Matching due dates retain source order, and todos with `null` or missing due dates appear after all dated todos. The selected sort is not persisted and changing it does not refetch from the API.
 
 ## Local setup
 
