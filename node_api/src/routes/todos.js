@@ -36,6 +36,15 @@ function completedFromBody(body) {
   return { completed: body.completed };
 }
 
+function dueDateFromBody(body) {
+  if (!body || body.dueDate === undefined) return {};
+  if (body.dueDate === null) return { dueDate: null };
+  if (typeof body.dueDate !== 'string' || !Todo.isValidDateOnly(body.dueDate)) {
+    return { error: 'dueDate must be a valid YYYY-MM-DD date or null' };
+  }
+  return { dueDate: body.dueDate };
+}
+
 router.get('/', async (_req, res) => {
   const todos = await Todo.find().sort({ createdAt: -1, _id: -1 }).lean();
   return res.json(todos);
@@ -48,8 +57,11 @@ router.post('/', async (req, res) => {
   const completedResult = completedFromBody(req.body);
   if (completedResult.error) return error(res, 400, completedResult.error);
 
+  const dueDateResult = dueDateFromBody(req.body);
+  if (dueDateResult.error) return error(res, 400, dueDateResult.error);
+
   try {
-    const todo = await Todo.create({ ...titleResult, ...completedResult });
+    const todo = await Todo.create({ ...titleResult, ...completedResult, ...dueDateResult });
     return res.status(201).json(todo);
   } catch (_err) {
     return error(res, 400, 'invalid todo');
@@ -66,9 +78,12 @@ router.patch('/:id', async (req, res) => {
   const completedResult = completedFromBody(req.body);
   if (completedResult.error) return error(res, 400, completedResult.error);
 
-  const updates = { ...titleResult, ...completedResult };
+  const dueDateResult = dueDateFromBody(req.body);
+  if (dueDateResult.error) return error(res, 400, dueDateResult.error);
+
+  const updates = { ...titleResult, ...completedResult, ...dueDateResult };
   if (Object.keys(updates).length === 0) {
-    return error(res, 400, 'at least one of title or completed is required');
+    return error(res, 400, 'at least one of title, completed, or dueDate is required');
   }
 
   try {

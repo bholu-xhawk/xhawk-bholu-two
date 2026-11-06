@@ -24,15 +24,15 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helve
 .contact-form button:hover { background: #1d4ed8; }
 
 /* Todo app */
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button { border: 0; border-radius: 10px; padding: 0.65rem 0.9rem; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer; transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease; }
 button:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-1px); }
 button.secondary { background: #e2e8f0; color: #0f172a; }
 button.secondary:hover:not(:disabled) { background: #cbd5e1; }
 button.danger { background: #dc2626; }
 button.danger:hover:not(:disabled) { background: #b91c1c; }
-button:disabled, input:disabled { cursor: not-allowed; opacity: 0.65; }
-button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+button:disabled, input:disabled, select:disabled { cursor: not-allowed; opacity: 0.65; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
 .todo-page { display: grid; gap: 1.25rem; }
 .todo-hero { background: linear-gradient(135deg, #1e293b, #2563eb); color: #fff; border-radius: 24px; padding: clamp(1.25rem, 4vw, 2.5rem); box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18); }
@@ -43,8 +43,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
 .todo-create-form, .todo-item, .todo-empty, .todo-status, .todo-error { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
 .todo-create-form { display: grid; gap: 0.5rem; padding: 1rem; }
 .todo-create-form label { font-weight: 800; }
-.todo-create-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
-.todo-create-row input, .todo-edit-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
+.todo-create-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem) auto; align-items: end; gap: 0.75rem; }
+.todo-create-row input, .todo-edit-input, .todo-edit-date-input, .todo-toolbar select { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
+.todo-date-field { display: grid; gap: 0.35rem; }
+.todo-date-field label, .todo-edit-date-label, .todo-toolbar label { color: #334155; font-size: 0.85rem; font-weight: 800; }
+.todo-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.85rem 1rem; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+.todo-toolbar select { max-width: 12rem; cursor: pointer; }
 .todo-error { padding: 0.9rem 1rem; border-color: #fecaca; background: #fef2f2; color: #991b1b; font-weight: 700; }
 .todo-status, .todo-empty { padding: 1.25rem; color: #475569; text-align: center; }
 .todo-list { list-style: none; display: grid; gap: 0.85rem; padding: 0; margin: 0; }
@@ -53,7 +57,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
 .todo-check { display: flex; align-items: center; gap: 0.45rem; color: #475569; font-size: 0.9rem; }
 .todo-check input { width: 1.2rem; height: 1.2rem; accent-color: #16a34a; }
 .todo-title { display: inline-block; font-size: 1.05rem; font-weight: 700; }
-.todo-content { min-width: 0; }
+.todo-content { display: grid; gap: 0.35rem; min-width: 0; }
+.todo-due-date { color: #64748b; font-size: 0.9rem; font-weight: 650; }
+.todo-due-date time { color: #1e40af; }
 .todo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
@@ -61,6 +67,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
   .navbar { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
   .nav-links { flex-wrap: wrap; }
   .todo-create-row, .todo-item { grid-template-columns: 1fr; align-items: stretch; }
+  .todo-toolbar { align-items: stretch; flex-direction: column; }
+  .todo-toolbar select { max-width: none; }
   .todo-actions { justify-content: stretch; }
   .todo-actions button, .todo-create-row button { width: 100%; }
 }

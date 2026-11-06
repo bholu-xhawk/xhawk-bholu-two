@@ -1,6 +1,7 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const Todo = require('../src/models/Todo');
 
 let app;
 let mongoServer;
@@ -32,18 +33,21 @@ describe('Todos API', () => {
       .send({ title: '  First todo  ' })
       .expect(201);
 
-    expect(first.body).toMatchObject({ title: 'First todo', completed: false });
+    expect(first.body).toMatchObject({ title: 'First todo', completed: false, dueDate: null });
     expect(first.body).toHaveProperty('_id');
     expect(first.body).toHaveProperty('createdAt');
     expect(first.body).toHaveProperty('updatedAt');
 
     const second = await request(app)
       .post('/api/todos')
-      .send({ title: 'Second todo', completed: true })
+      .send({ title: 'Second todo', completed: true, dueDate: '2026-01-15' })
       .expect(201);
+
+    expect(second.body.dueDate).toBe('2026-01-15');
 
     const list = await request(app).get('/api/todos').expect(200);
     expect(list.body.map((todo) => todo._id)).toEqual([second.body._id, first.body._id]);
+    expect(list.body[0].dueDate).toBe('2026-01-15');
 
     const renamed = await request(app)
       .patch(`/api/todos/${first.body._id}`)
@@ -57,6 +61,18 @@ describe('Todos API', () => {
       .send({ completed: true })
       .expect(200);
     expect(completed.body.completed).toBe(true);
+
+    const dated = await request(app)
+      .patch(`/api/todos/${first.body._id}`)
+      .send({ dueDate: '2026-02-28' })
+      .expect(200);
+    expect(dated.body.dueDate).toBe('2026-02-28');
+
+    const cleared = await request(app)
+      .patch(`/api/todos/${first.body._id}`)
+      .send({ dueDate: null })
+      .expect(200);
+    expect(cleared.body.dueDate).toBeNull();
 
     await request(app).delete(`/api/todos/${first.body._id}`).expect(204);
 
@@ -105,7 +121,57 @@ describe('Todos API', () => {
     await request(app)
       .patch(`/api/todos/${created.body._id}`)
       .send({ ignored: 'field' })
-      .expect(400, { error: 'at least one of title or completed is required' });
+      .expect(400, { error: 'at least one of title, completed, or dueDate is required' });
+  });
+
+  it('accepts omitted, null, and valid dueDate values without changing default list order', async () => {
+    await Todo.collection.insertOne({
+      title: 'Older undated record',
+      completed: false,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    const dated = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Dated todo', dueDate: '2026-12-31' })
+      .expect(201);
+    expect(dated.body.dueDate).toBe('2026-12-31');
+
+    const explicitlyUndated = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Explicitly undated', dueDate: null })
+      .expect(201);
+    expect(explicitlyUndated.body.dueDate).toBeNull();
+
+    const list = await request(app).get('/api/todos').expect(200);
+    expect(list.body.map((todo) => todo.title)).toEqual([
+      'Explicitly undated',
+      'Dated todo',
+      'Older undated record',
+    ]);
+    expect(list.body.find((todo) => todo.title === 'Older undated record')).not.toHaveProperty('dueDate');
+  });
+
+  it('rejects invalid dueDate values', async () => {
+    const created = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Valid todo' })
+      .expect(201);
+
+    const invalidDueDates = [false, 20260101, {}, [], '2026-1-01', '2026-13-01', '2026-02-30'];
+
+    for (const dueDate of invalidDueDates) {
+      await request(app)
+        .post('/api/todos')
+        .send({ title: 'Invalid due date', dueDate })
+        .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date or null' });
+
+      await request(app)
+        .patch(`/api/todos/${created.body._id}`)
+        .send({ dueDate })
+        .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date or null' });
+    }
   });
 
   it('returns consistent errors for invalid ids and missing records', async () => {
