@@ -64,6 +64,96 @@ describe('Todos API', () => {
     expect(afterDelete.body.map((todo) => todo._id)).toEqual([second.body._id]);
   });
 
+  it('creates, lists, updates, and clears date-only due dates', async () => {
+    const created = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Deadline task', dueDate: '2026-11-06' })
+      .expect(201);
+
+    expect(created.body).toMatchObject({
+      title: 'Deadline task',
+      completed: false,
+      dueDate: '2026-11-06T00:00:00.000Z',
+    });
+
+    const list = await request(app).get('/api/todos').expect(200);
+    expect(list.body[0]).toMatchObject({
+      _id: created.body._id,
+      dueDate: '2026-11-06T00:00:00.000Z',
+    });
+
+    const dueDateOnlyPatch = await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: '2026-12-25' })
+      .expect(200);
+    expect(dueDateOnlyPatch.body).toMatchObject({
+      title: 'Deadline task',
+      completed: false,
+      dueDate: '2026-12-25T00:00:00.000Z',
+    });
+
+    const cleared = await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: null })
+      .expect(200);
+    expect(cleared.body).toHaveProperty('dueDate', null);
+
+    const afterClear = await request(app).get('/api/todos').expect(200);
+    expect(afterClear.body[0]).toHaveProperty('dueDate', null);
+  });
+
+  it('keeps dueDate optional for existing-style records', async () => {
+    const created = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Undated task' })
+      .expect(201);
+
+    expect(created.body).not.toHaveProperty('dueDate');
+
+    const list = await request(app).get('/api/todos').expect(200);
+    expect(list.body[0]).not.toHaveProperty('dueDate');
+  });
+
+  it('rejects malformed, impossible, and wrongly typed due dates without changing the todo', async () => {
+    const created = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Valid deadline', dueDate: '2026-11-06' })
+      .expect(201);
+
+    await request(app)
+      .post('/api/todos')
+      .send({ title: 'Bad deadline', dueDate: '11/06/2026' })
+      .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date' });
+
+    await request(app)
+      .post('/api/todos')
+      .send({ title: 'Impossible deadline', dueDate: '2026-02-30' })
+      .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date' });
+
+    await request(app)
+      .post('/api/todos')
+      .send({ title: 'Typed wrong deadline', dueDate: true })
+      .expect(400, { error: 'dueDate must be a YYYY-MM-DD string or null' });
+
+    await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: '2026-13-01' })
+      .expect(400, { error: 'dueDate must be a valid YYYY-MM-DD date' });
+
+    await request(app)
+      .patch(`/api/todos/${created.body._id}`)
+      .send({ dueDate: 123 })
+      .expect(400, { error: 'dueDate must be a YYYY-MM-DD string or null' });
+
+    const unchanged = await request(app).get('/api/todos').expect(200);
+    expect(unchanged.body).toHaveLength(1);
+    expect(unchanged.body[0]).toMatchObject({
+      _id: created.body._id,
+      title: 'Valid deadline',
+      dueDate: '2026-11-06T00:00:00.000Z',
+    });
+  });
+
   it('rejects blank and invalid titles', async () => {
     await request(app)
       .post('/api/todos')
@@ -105,7 +195,7 @@ describe('Todos API', () => {
     await request(app)
       .patch(`/api/todos/${created.body._id}`)
       .send({ ignored: 'field' })
-      .expect(400, { error: 'at least one of title or completed is required' });
+      .expect(400, { error: 'at least one of title, completed, or dueDate is required' });
   });
 
   it('returns consistent errors for invalid ids and missing records', async () => {

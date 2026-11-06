@@ -14,6 +14,7 @@ const TodoSchema = new Schema(
       },
     },
     completed: { type: Boolean, default: false },
+    dueDate: { type: Date, required: false, default: undefined },
   },
   { timestamps: true }
 );

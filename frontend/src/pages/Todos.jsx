@@ -1,11 +1,53 @@
 import React, { useEffect, useState } from 'react'
 import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
+function dateOnlyFromValue(value) {
+  if (typeof value !== 'string') return ''
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})(?:T|$)/)
+  if (!match) return ''
+
+  const [, yearText, monthText, dayText] = match
+  const year = Number(yearText)
+  const month = Number(monthText)
+  const day = Number(dayText)
+  const parsedDate = new Date(Date.UTC(year, month - 1, day))
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    return ''
+  }
+
+  return `${yearText}-${monthText}-${dayText}`
+}
+
+function todayDateOnly() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function isOverdue(todo) {
+  const dueDate = dateOnlyFromValue(todo.dueDate)
+  return Boolean(dueDate && !todo.completed && dueDate < todayDateOnly())
+}
+
+function dueDateLabel(todo) {
+  const dueDate = dateOnlyFromValue(todo.dueDate)
+  return dueDate ? `Due ${dueDate}` : 'No due date'
+}
+
 export default function Todos() {
   const [todos, setTodos] = useState([])
   const [newTitle, setNewTitle] = useState('')
+  const [newDueDate, setNewDueDate] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [editingDueDate, setEditingDueDate] = useState('')
+  const [showOverdueOnly, setShowOverdueOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
@@ -48,9 +90,10 @@ export default function Todos() {
     setPendingAction('create')
     setError('')
     try {
-      const createdTodo = await createTodo(title)
+      const createdTodo = await createTodo(title, newDueDate || undefined)
       setTodos((currentTodos) => [createdTodo, ...currentTodos])
       setNewTitle('')
+      setNewDueDate('')
     } catch (err) {
       setError(err.message || 'Unable to create todo')
     } finally {
@@ -61,12 +104,14 @@ export default function Todos() {
   function beginEdit(todo) {
     setEditingId(todo._id)
     setEditingTitle(todo.title)
+    setEditingDueDate(dateOnlyFromValue(todo.dueDate))
     setError('')
   }
 
   function cancelEdit() {
     setEditingId(null)
     setEditingTitle('')
+    setEditingDueDate('')
     setError('')
   }
 
@@ -80,10 +125,11 @@ export default function Todos() {
     setPendingAction(`edit:${todo._id}`)
     setError('')
     try {
-      const updatedTodo = await updateTodo(todo._id, { title })
+      const updatedTodo = await updateTodo(todo._id, { title, dueDate: editingDueDate || null })
       replaceTodo(updatedTodo)
       setEditingId(null)
       setEditingTitle('')
+      setEditingDueDate('')
     } catch (err) {
       setError(err.message || 'Unable to update todo')
     } finally {
@@ -122,6 +168,7 @@ export default function Todos() {
   }
 
   const createPending = pendingAction === 'create'
+  const visibleTodos = showOverdueOnly ? todos.filter(isOverdue) : todos
 
   return (
     <main className="todo-page" aria-labelledby="todo-title">
@@ -142,6 +189,16 @@ export default function Todos() {
             placeholder="What needs to be done?"
             disabled={createPending}
           />
+          <label className="todo-date-field" htmlFor="new-todo-due-date">
+            <span>Due date</span>
+            <input
+              id="new-todo-due-date"
+              type="date"
+              value={newDueDate}
+              onChange={(event) => setNewDueDate(event.target.value)}
+              disabled={createPending}
+            />
+          </label>
           <button type="submit" disabled={createPending}>
             {createPending ? 'Adding…' : 'Add todo'}
           </button>
@@ -154,20 +211,36 @@ export default function Todos() {
         </div>
       )}
 
+      {!loading && todos.length > 0 ? (
+        <div className="todo-filter-bar">
+          <label className="todo-filter">
+            <input
+              type="checkbox"
+              checked={showOverdueOnly}
+              onChange={(event) => setShowOverdueOnly(event.target.checked)}
+            />
+            <span>Show overdue only</span>
+          </label>
+        </div>
+      ) : null}
+
       {loading ? (
         <p className="todo-status">Loading todos…</p>
       ) : todos.length === 0 ? (
         <p className="todo-empty">No todos yet. Add your first task above.</p>
+      ) : visibleTodos.length === 0 ? (
+        <p className="todo-empty">No overdue todos. Completed, undated, today, and future tasks are hidden by this filter.</p>
       ) : (
         <ul className="todo-list" aria-label="Todo list">
-          {todos.map((todo) => {
+          {visibleTodos.map((todo) => {
             const isEditing = editingId === todo._id
             const editPending = pendingAction === `edit:${todo._id}`
             const togglePending = pendingAction === `toggle:${todo._id}`
             const deletePending = pendingAction === `delete:${todo._id}`
+            const overdue = isOverdue(todo)
 
             return (
-              <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
+              <li className={`todo-item${todo.completed ? ' completed' : ''}${overdue ? ' overdue' : ''}`} key={todo._id}>
                 <label className="todo-check">
                   <input
                     type="checkbox"
@@ -180,21 +253,36 @@ export default function Todos() {
 
                 <div className="todo-content">
                   {isEditing ? (
-                    <label className="sr-only" htmlFor={`edit-${todo._id}`}>
-                      Edit {todo.title}
-                    </label>
-                  ) : null}
-                  {isEditing ? (
-                    <input
-                      id={`edit-${todo._id}`}
-                      className="todo-edit-input"
-                      type="text"
-                      value={editingTitle}
-                      onChange={(event) => setEditingTitle(event.target.value)}
-                      disabled={editPending}
-                    />
+                    <div className="todo-edit-fields">
+                      <label className="todo-edit-field" htmlFor={`edit-${todo._id}`}>
+                        <span>Todo title</span>
+                        <input
+                          id={`edit-${todo._id}`}
+                          className="todo-edit-input"
+                          type="text"
+                          value={editingTitle}
+                          onChange={(event) => setEditingTitle(event.target.value)}
+                          disabled={editPending}
+                        />
+                      </label>
+                      <label className="todo-edit-field" htmlFor={`edit-due-${todo._id}`}>
+                        <span>Due date</span>
+                        <input
+                          id={`edit-due-${todo._id}`}
+                          className="todo-edit-input"
+                          type="date"
+                          value={editingDueDate}
+                          onChange={(event) => setEditingDueDate(event.target.value)}
+                          disabled={editPending}
+                        />
+                      </label>
+                    </div>
                   ) : (
-                    <span className="todo-title">{todo.title}</span>
+                    <>
+                      <span className="todo-title">{todo.title}</span>
+                      <span className="todo-due-date">{dueDateLabel(todo)}</span>
+                      {overdue ? <span className="todo-overdue-status">Overdue</span> : null}
+                    </>
                   )}
                 </div>
 
