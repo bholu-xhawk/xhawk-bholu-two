@@ -64,6 +64,53 @@ describe('Todos API', () => {
     expect(afterDelete.body.map((todo) => todo._id)).toEqual([second.body._id]);
   });
 
+  it('clears completed todos while preserving incomplete todos', async () => {
+    const incompleteOne = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Keep first incomplete' })
+      .expect(201);
+
+    const completedOne = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Remove completed', completed: true })
+      .expect(201);
+
+    const incompleteTwo = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Keep second incomplete', completed: false })
+      .expect(201);
+
+    const completedTwo = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Remove another completed', completed: true })
+      .expect(201);
+
+    await request(app).delete('/api/todos/completed').expect(204);
+
+    const afterClear = await request(app).get('/api/todos').expect(200);
+    expect(afterClear.body.map((todo) => todo._id)).toEqual([incompleteTwo.body._id, incompleteOne.body._id]);
+    expect(afterClear.body.map((todo) => todo._id)).not.toEqual(expect.arrayContaining([completedOne.body._id, completedTwo.body._id]));
+    expect(afterClear.body.every((todo) => todo.completed === false)).toBe(true);
+  });
+
+  it('treats clearing completed todos with no matches as success', async () => {
+    const incomplete = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Only incomplete' })
+      .expect(201);
+
+    await request(app).delete('/api/todos/completed').expect(204);
+    await request(app).delete('/api/todos/completed').expect(204);
+
+    const afterRepeatedClear = await request(app).get('/api/todos').expect(200);
+    expect(afterRepeatedClear.body).toHaveLength(1);
+    expect(afterRepeatedClear.body[0]).toMatchObject({
+      _id: incomplete.body._id,
+      title: 'Only incomplete',
+      completed: false,
+    });
+  });
+
   it('rejects blank and invalid titles', async () => {
     await request(app)
       .post('/api/todos')

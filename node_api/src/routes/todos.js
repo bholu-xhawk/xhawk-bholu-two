@@ -83,6 +83,11 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+router.delete('/completed', async (_req, res) => {
+  await Todo.deleteMany({ completed: true });
+  return res.status(204).send();
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   if (!validateId(res, id)) return undefined;
