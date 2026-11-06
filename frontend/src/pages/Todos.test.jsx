@@ -4,13 +4,14 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Todos from './Todos'
-import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
+import { clearCompletedTodos, createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
 vi.mock('../api/todos', () => ({
   listTodos: vi.fn(),
   createTodo: vi.fn(),
   updateTodo: vi.fn(),
   deleteTodo: vi.fn(),
+  clearCompletedTodos: vi.fn(),
 }))
 
 const initialTodos = [
@@ -191,5 +192,86 @@ describe('Todos page', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Delete failed')
     expect(screen.getByText('Write tests')).toBeInTheDocument()
+  })
+
+  it('disables clear completed when no todos are completed', async () => {
+    listTodos.mockResolvedValueOnce([{ _id: 'todo-1', title: 'Still active', completed: false }])
+
+    renderTodos()
+
+    expect(await screen.findByRole('button', { name: /clear completed/i })).toBeDisabled()
+  })
+
+  it('cancels clearing completed todos without calling the API', async () => {
+    const user = userEvent.setup()
+    window.confirm.mockReturnValueOnce(false)
+    listTodos.mockResolvedValueOnce(initialTodos)
+
+    renderTodos()
+    await screen.findByText('Ship feature')
+    await user.click(screen.getByRole('button', { name: /clear completed/i }))
+
+    expect(window.confirm).toHaveBeenCalledWith('Clear 1 completed todo?')
+    expect(clearCompletedTodos).not.toHaveBeenCalled()
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
+  })
+
+  it('clears completed todos after confirmation and API success', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce([
+      ...initialTodos,
+      { _id: 'todo-3', title: 'Archive docs', completed: true },
+    ])
+    clearCompletedTodos.mockResolvedValueOnce(null)
+
+    renderTodos()
+    await screen.findByText('Archive docs')
+    await user.click(screen.getByRole('button', { name: /clear completed/i }))
+
+    expect(window.confirm).toHaveBeenCalledWith('Clear 2 completed todos?')
+    expect(clearCompletedTodos).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      expect(screen.queryByText('Ship feature')).not.toBeInTheDocument()
+      expect(screen.queryByText('Archive docs')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+  })
+
+  it('disables the clear and item controls while clearing completed todos', async () => {
+    const user = userEvent.setup()
+    let resolveClear
+    listTodos.mockResolvedValueOnce(initialTodos)
+    clearCompletedTodos.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveClear = resolve
+      }),
+    )
+
+    renderTodos()
+    await screen.findByText('Ship feature')
+    await user.click(screen.getByRole('button', { name: /clear completed/i }))
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /clear completed/i })).toBeDisabled())
+    screen.getAllByRole('checkbox').forEach((checkbox) => expect(checkbox).toBeDisabled())
+    screen.getAllByRole('button', { name: /edit/i }).forEach((button) => expect(button).toBeDisabled())
+    screen.getAllByRole('button', { name: /delete/i }).forEach((button) => expect(button).toBeDisabled())
+
+    resolveClear(null)
+    await waitFor(() => expect(screen.queryByText('Ship feature')).not.toBeInTheDocument())
+  })
+
+  it('keeps all todos and shows an alert when clearing completed todos fails', async () => {
+    const user = userEvent.setup()
+    listTodos.mockResolvedValueOnce(initialTodos)
+    clearCompletedTodos.mockRejectedValueOnce(new Error('Clear failed'))
+
+    renderTodos()
+    await screen.findByText('Ship feature')
+    await user.click(screen.getByRole('button', { name: /clear completed/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Clear failed')
+    expect(screen.getByText('Write tests')).toBeInTheDocument()
+    expect(screen.getByText('Ship feature')).toBeInTheDocument()
   })
 })

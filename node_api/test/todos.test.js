@@ -64,6 +64,46 @@ describe('Todos API', () => {
     expect(afterDelete.body.map((todo) => todo._id)).toEqual([second.body._id]);
   });
 
+  it('clears completed todos while preserving incomplete todos', async () => {
+    const incomplete = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Keep incomplete' })
+      .expect(201);
+    const completedOne = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Remove first completed', completed: true })
+      .expect(201);
+    const completedTwo = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Remove second completed', completed: true })
+      .expect(201);
+
+    await request(app).delete('/api/todos/completed').expect(204);
+
+    const afterClear = await request(app).get('/api/todos').expect(200);
+    expect(afterClear.body.map((todo) => todo._id)).toEqual([incomplete.body._id]);
+    expect(afterClear.body.map((todo) => todo.title)).toEqual(['Keep incomplete']);
+    expect(afterClear.body).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ _id: completedOne.body._id }),
+        expect.objectContaining({ _id: completedTwo.body._id }),
+      ]),
+    );
+  });
+
+  it('clears completed todos idempotently when none match', async () => {
+    const incomplete = await request(app)
+      .post('/api/todos')
+      .send({ title: 'Only incomplete' })
+      .expect(201);
+
+    await request(app).delete('/api/todos/completed').expect(204);
+    await request(app).delete('/api/todos/completed').expect(204);
+
+    const afterClear = await request(app).get('/api/todos').expect(200);
+    expect(afterClear.body.map((todo) => todo._id)).toEqual([incomplete.body._id]);
+  });
+
   it('rejects blank and invalid titles', async () => {
     await request(app)
       .post('/api/todos')

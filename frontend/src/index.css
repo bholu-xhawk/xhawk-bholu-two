@@ -40,15 +40,19 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
 .todo-hero p { max-width: 42rem; margin-bottom: 0; color: #dbeafe; }
 .eyebrow { margin: 0; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; font-weight: 800; color: #bfdbfe; }
 
-.todo-create-form, .todo-item, .todo-empty, .todo-status, .todo-error { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+.todo-create-form, .todo-list-panel, .todo-item, .todo-empty, .todo-status, .todo-error { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
 .todo-create-form { display: grid; gap: 0.5rem; padding: 1rem; }
 .todo-create-form label { font-weight: 800; }
 .todo-create-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
 .todo-create-row input, .todo-edit-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.7rem 0.85rem; color: #0f172a; background: #fff; }
 .todo-error { padding: 0.9rem 1rem; border-color: #fecaca; background: #fef2f2; color: #991b1b; font-weight: 700; }
 .todo-status, .todo-empty { padding: 1.25rem; color: #475569; text-align: center; }
+.todo-list-panel { display: grid; gap: 0.85rem; padding: 1rem; }
+.todo-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.todo-toolbar p { margin: 0; color: #475569; font-weight: 800; }
+.todo-clear-completed { white-space: nowrap; }
 .todo-list { list-style: none; display: grid; gap: 0.85rem; padding: 0; margin: 0; }
-.todo-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; padding: 1rem; }
+.todo-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; padding: 1rem; box-shadow: none; }
 .todo-item.completed .todo-title { color: #64748b; text-decoration: line-through; }
 .todo-check { display: flex; align-items: center; gap: 0.45rem; color: #475569; font-size: 0.9rem; }
 .todo-check input { width: 1.2rem; height: 1.2rem; accent-color: #16a34a; }
@@ -61,6 +65,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-
   .navbar { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
   .nav-links { flex-wrap: wrap; }
   .todo-create-row, .todo-item { grid-template-columns: 1fr; align-items: stretch; }
+  .todo-toolbar { align-items: stretch; flex-direction: column; }
   .todo-actions { justify-content: stretch; }
-  .todo-actions button, .todo-create-row button { width: 100%; }
+  .todo-actions button, .todo-create-row button, .todo-clear-completed { width: 100%; }
 }
