@@ -17,6 +17,7 @@ Todos are shared and unauthenticated because this repository does not include an
 
 - `title` — required string, trimmed, and rejected when blank.
 - `completed` — boolean, defaults to `false`.
+- `dueDate` — nullable date, defaults to `null`. Requests use an exact `YYYY-MM-DD` calendar date; responses return Mongoose's ISO date string, for example `2026-02-14T00:00:00.000Z`.
 - `createdAt` and `updatedAt` — automatic Mongoose timestamps.
 
 ## Todo API contract
@@ -24,11 +25,18 @@ Todos are shared and unauthenticated because this repository does not include an
 All errors return JSON in the shape `{ "error": "message" }`.
 
 - `GET /api/todos` — list todos newest first.
-- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
-- `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
+- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false, "dueDate": "2026-02-14" }`; `completed` and `dueDate` are optional.
+- `PATCH /api/todos/:id` — update any mutable field with `{ "title": "New task" }`, `{ "completed": true }`, `{ "dueDate": "2026-03-01" }`, or a combination.
+- `PATCH /api/todos/:id` with `{ "dueDate": null }` — clear an existing due date.
 - `DELETE /api/todos/:id` — delete a todo and return `204`.
 
-Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
+Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, malformed or impossible `dueDate` values return `400`, and valid IDs that do not match a record return `404`.
+
+## Due dates and overdue filtering
+
+The frontend exposes optional due-date controls on create and edit forms. A todo is overdue only when it is incomplete and its stored date key is earlier than the browser's current local calendar date. Todos remain non-overdue for the entire due day, completed todos are never shown as overdue, and due dates do not change the existing newest-first ordering.
+
+The todo page includes an All/Overdue filter. Filtering is client-side, uses the same overdue rule as the row styling and label, preserves the original list order, and shows a filter-specific empty state when no todos are currently overdue.
 
 ## Local setup
 

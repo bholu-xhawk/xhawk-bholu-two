@@ -34,10 +34,13 @@ export function listTodos() {
   return request()
 }
 
-export function createTodo(title) {
+export function createTodo(title, dueDate) {
+  const body = { title }
+  if (dueDate) body.dueDate = dueDate
+
   return request('', {
     method: 'POST',
-    body: JSON.stringify({ title }),
+    body: JSON.stringify(body),
   })
 }
 
