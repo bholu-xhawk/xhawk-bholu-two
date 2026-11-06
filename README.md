@@ -26,9 +26,12 @@ All errors return JSON in the shape `{ "error": "message" }`.
 - `GET /api/todos` — list todos newest first.
 - `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
 - `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
+- `DELETE /api/todos/completed` — delete all completed todos and return `204`; incomplete todos remain, and the route succeeds even when no completed todos match.
 - `DELETE /api/todos/:id` — delete a todo and return `204`.
 
 Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
+
+The static `DELETE /api/todos/completed` route must be registered before `DELETE /api/todos/:id` so Express does not treat `completed` as a Mongo ID.
 
 ## Local setup
 

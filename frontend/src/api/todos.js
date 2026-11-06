@@ -51,3 +51,7 @@ export function updateTodo(id, fields) {
 export function deleteTodo(id) {
   return request(`/${id}`, { method: 'DELETE' })
 }
+
+export function clearCompletedTodos() {
+  return request('/completed', { method: 'DELETE' })
+}
