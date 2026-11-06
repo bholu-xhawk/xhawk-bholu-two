@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
+import { clearCompletedTodos, createTodo, deleteTodo, listTodos, updateTodo } from '../api/todos'
 
 export default function Todos() {
   const [todos, setTodos] = useState([])
@@ -121,7 +121,31 @@ export default function Todos() {
     }
   }
 
+  async function handleClearCompleted() {
+    const confirmed = window.confirm('Clear all completed todos?')
+    if (!confirmed) return
+
+    setPendingAction('clear-completed')
+    setError('')
+    try {
+      await clearCompletedTodos()
+      setTodos((currentTodos) => currentTodos.filter((todo) => !todo.completed))
+      if (todos.some((todo) => todo._id === editingId && todo.completed)) {
+        setEditingId(null)
+        setEditingTitle('')
+      }
+    } catch (err) {
+      setError(err.message || 'Unable to clear completed todos')
+    } finally {
+      setPendingAction(null)
+    }
+  }
+
   const createPending = pendingAction === 'create'
+  const clearPending = pendingAction === 'clear-completed'
+  const actionPending = Boolean(pendingAction)
+  const completedCount = todos.filter((todo) => todo.completed).length
+  const hasCompletedTodos = completedCount > 0
 
   return (
     <main className="todo-page" aria-labelledby="todo-title">
@@ -140,9 +164,9 @@ export default function Todos() {
             value={newTitle}
             onChange={(event) => setNewTitle(event.target.value)}
             placeholder="What needs to be done?"
-            disabled={createPending}
+            disabled={actionPending}
           />
-          <button type="submit" disabled={createPending}>
+          <button type="submit" disabled={actionPending}>
             {createPending ? 'Adding…' : 'Add todo'}
           </button>
         </div>
@@ -153,6 +177,20 @@ export default function Todos() {
           {error}
         </div>
       )}
+
+      <section className="todo-list-actions" aria-label="Todo list actions">
+        <div>
+          <h2>List actions</h2>
+          <p>
+            {completedCount === 1
+              ? '1 completed todo can be cleared.'
+              : `${completedCount} completed todos can be cleared.`}
+          </p>
+        </div>
+        <button type="button" className="danger" onClick={handleClearCompleted} disabled={loading || !hasCompletedTodos || actionPending}>
+          {clearPending ? 'Clearing…' : 'Clear completed'}
+        </button>
+      </section>
 
       {loading ? (
         <p className="todo-status">Loading todos…</p>
@@ -165,6 +203,7 @@ export default function Todos() {
             const editPending = pendingAction === `edit:${todo._id}`
             const togglePending = pendingAction === `toggle:${todo._id}`
             const deletePending = pendingAction === `delete:${todo._id}`
+            const rowMutationDisabled = clearPending || deletePending || editPending
 
             return (
               <li className={`todo-item${todo.completed ? ' completed' : ''}`} key={todo._id}>
@@ -173,7 +212,7 @@ export default function Todos() {
                     type="checkbox"
                     checked={todo.completed}
                     onChange={() => handleToggle(todo)}
-                    disabled={togglePending || deletePending || editPending}
+                    disabled={togglePending || rowMutationDisabled}
                   />
                   <span>{todo.completed ? 'Completed' : 'Incomplete'}</span>
                 </label>
@@ -191,7 +230,7 @@ export default function Todos() {
                       type="text"
                       value={editingTitle}
                       onChange={(event) => setEditingTitle(event.target.value)}
-                      disabled={editPending}
+                      disabled={editPending || clearPending}
                     />
                   ) : (
                     <span className="todo-title">{todo.title}</span>
@@ -201,10 +240,10 @@ export default function Todos() {
                 <div className="todo-actions">
                   {isEditing ? (
                     <>
-                      <button type="button" onClick={() => handleSave(todo)} disabled={editPending}>
+                      <button type="button" onClick={() => handleSave(todo)} disabled={editPending || clearPending}>
                         {editPending ? 'Saving…' : 'Save'}
                       </button>
-                      <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending}>
+                      <button type="button" className="secondary" onClick={cancelEdit} disabled={editPending || clearPending}>
                         Cancel
                       </button>
                     </>
@@ -213,7 +252,7 @@ export default function Todos() {
                       Edit
                     </button>
                   )}
-                  <button type="button" className="danger" onClick={() => handleDelete(todo)} disabled={deletePending || editPending}>
+                  <button type="button" className="danger" onClick={() => handleDelete(todo)} disabled={rowMutationDisabled}>
                     {deletePending ? 'Deleting…' : 'Delete'}
                   </button>
                 </div>

@@ -26,6 +26,7 @@ All errors return JSON in the shape `{ "error": "message" }`.
 - `GET /api/todos` — list todos newest first.
 - `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
 - `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
+- `DELETE /api/todos/completed` — delete every todo whose `completed` field is `true`, preserve incomplete todos, and return `204`; repeated calls with no completed records still succeed.
 - `DELETE /api/todos/:id` — delete a todo and return `204`.
 
 Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
