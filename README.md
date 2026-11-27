@@ -1,34 +1,43 @@
 # Full-stack Todo Application
 
-This repository contains a React/Vite frontend, an Express/Mongoose API, and a small legacy FastAPI sample. The todo application uses the Node.js service and MongoDB stack; the Python/FastAPI files remain as sample functionality and are not the todo backend.
+This repository contains a React/Vite frontend, an Express/Mongoose Node API, and a small legacy FastAPI sample. The todo screen is intentionally backed by a deterministic mocked GET endpoint, while MongoDB remains only for the separate `/users` sample API.
 
 ## Architecture
 
-- `frontend/` — React app built with Vite. The root route renders the todo screen from `frontend/src/pages/Todos.jsx`; the original portfolio home remains available at `/portfolio` with the other portfolio routes unchanged.
-- `frontend/src/api/todos.js` — the single browser fetch boundary for todo CRUD. It uses relative `/api/todos` URLs so the Vite development proxy can forward requests to Express.
-- `node_api/` — Express API backed by Mongoose. It preserves the existing `/users` sample API and mounts todo persistence at `/api/todos`.
-- `docker-compose.yml` — local MongoDB service exposed on `localhost:27017` with a persistent named volume.
+- `frontend/` — React app built with Vite. The root route renders the read-only todo screen from `frontend/src/pages/Todos.jsx`; the original portfolio home remains available at `/portfolio` with the other portfolio routes unchanged.
+- `frontend/src/api/todos.js` — the browser fetch boundary for todos. It only performs `GET /api/todos` and relies on the Vite development proxy for local API requests.
+- `node_api/` — Express API. It mounts the mocked todo endpoint at `/api/todos` and preserves the existing MongoDB-backed `/users` sample API.
+- `docker-compose.yml` — local MongoDB service for the users sample. Todos do not connect to MongoDB and do not have a Mongoose model.
 
-Todos are shared and unauthenticated because this repository does not include an authentication or ownership model.
+## Mocked todo API contract
 
-## Todo schema
+`GET /api/todos` returns `200` with the same ordered JSON array on every request:
 
-`node_api/src/models/Todo.js` stores each todo with:
+```json
+[
+  {
+    "id": "mock-todo-1",
+    "title": "Review the mocked todo endpoint",
+    "completed": true
+  },
+  {
+    "id": "mock-todo-2",
+    "title": "Render read-only todo rows",
+    "completed": false
+  },
+  {
+    "id": "mock-todo-3",
+    "title": "Keep the users sample backed by MongoDB",
+    "completed": false
+  }
+]
+```
 
-- `title` — required string, trimmed, and rejected when blank.
-- `completed` — boolean, defaults to `false`.
-- `createdAt` and `updatedAt` — automatic Mongoose timestamps.
+Todo mutation methods are not supported. `POST /api/todos`, `PATCH /api/todos/:id`, and `DELETE /api/todos/:id` are intentionally unrouted and return Express 404 responses.
 
-## Todo API contract
+## Read-only todo UI
 
-All errors return JSON in the shape `{ "error": "message" }`.
-
-- `GET /api/todos` — list todos newest first.
-- `POST /api/todos` — create a todo with body `{ "title": "Task", "completed": false }`; `completed` is optional.
-- `PATCH /api/todos/:id` — update one or both mutable fields with `{ "title": "New task" }`, `{ "completed": true }`, or both.
-- `DELETE /api/todos/:id` — delete a todo and return `204`.
-
-Invalid Mongo IDs return `400`, blank or wrongly typed fields return `400`, and valid IDs that do not match a record return `404`.
+The root page loads the mocked todos once, then displays each title with a completed or incomplete status badge. It includes loading, empty, and error states, but no controls for creating, editing, toggling, or deleting todos.
 
 ## Local setup
 
@@ -39,21 +48,7 @@ npm install --prefix node_api
 npm install --prefix frontend
 ```
 
-Start MongoDB:
-
-```bash
-docker-compose up -d mongo
-```
-
-Configure the Node API if needed:
-
-```bash
-cp node_api/.env.example node_api/.env
-```
-
-By default the Node API uses `MONGODB_URI=mongodb://localhost:27017/node_api` and listens on port `3000`.
-
-Start the API and frontend in separate terminals:
+Start the Node API and frontend in separate terminals:
 
 ```bash
 npm start --prefix node_api
@@ -61,6 +56,15 @@ npm run dev --prefix frontend
 ```
 
 Open the Vite development URL. Browser requests to `/api` are proxied to `http://localhost:3000`.
+
+MongoDB is only needed when exercising the users sample API:
+
+```bash
+docker-compose up -d mongo
+cp node_api/.env.example node_api/.env
+```
+
+By default the Node API uses `MONGODB_URI=mongodb://localhost:27017/node_api` for users and listens on port `3000`.
 
 ## Build and tests
 
@@ -71,15 +75,15 @@ npm run build
 npm test
 ```
 
-Equivalent workspace commands:
+Useful focused commands:
 
 ```bash
+npm test --prefix node_api -- --runInBand test/todos.test.js
+npm test --prefix frontend -- --run src/pages/Todos.test.jsx
 npm run build --prefix frontend
-npm test --prefix node_api -- --runInBand
-npm test --prefix frontend -- --run
 ```
 
-The Node API tests use `mongodb-memory-server`, so they do not require Docker.
+The todo API tests are database-free. The users API tests still use `mongodb-memory-server`, so they do not require Docker.
 
 ## Legacy FastAPI sample
 
